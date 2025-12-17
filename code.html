@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KUBU Home Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "neon-red": "#FF2E63",
+                        "neon-cyan": "#08D9D6",
+                        "card-dark": "#1E1E1E",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem", 
+                        "3xl": "1.5rem", 
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "neon": "0 0 10px rgba(8, 217, 214, 0.3), 0 0 20px rgba(255, 46, 99, 0.2)",
+                        "glow-red": "0 0 15px rgba(255, 46, 99, 0.4)",
+                        "glow-cyan": "0 0 15px rgba(8, 217, 214, 0.4)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for cyberpunk feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101922; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        
+        .diagonal-split {
+            background: linear-gradient(135deg, #FF2E63 50%, #08D9D6 50%);
+        }
+
+        .glass-nav {
+            background: rgba(16, 25, 34, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden pb-24 selection:bg-neon-cyan selection:text-black">
+<!-- Header -->
+<header class="sticky top-0 z-40 flex items-center justify-between p-5 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+<div class="flex items-center gap-2">
+<!-- Logo Icon -->
+<div class="flex items-center justify-center size-10 rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined" style="font-size: 28px;">how_to_vote</span>
+</div>
+<h1 class="text-2xl font-black tracking-tighter text-slate-900 dark:text-white">KUBU</h1>
+</div>
+<div class="flex items-center gap-3">
+<button class="relative flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-neon-red rounded-full shadow-[0_0_8px_#FF2E63]"></span>
+</button>
+<div class="size-10 rounded-full bg-cover bg-center border-2 border-slate-200 dark:border-slate-700" data-alt="User profile avatar showing a smiling face" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCdeMCLcWKjKvl_cb54ad4hwkieRbZ58U_9Nqt9WMz32OIiZ7RzelHNQOx496bnDZgT1hZ5ZOuuecdBIik0M9AwOAsOZPy7G-V-OLwk7PgoT3mxz7PFJwrJ3e6vkeDkJRrTUdqx4AzDEEyckR_qDd0HJ-1lnWgEjvdaTBabz09bueCNFFLsDFGyPSmOtkCHSDDxB-PZ9OfQPPvH604vcUP4cQ0nMvjlEfXSkV4Gqgv44CmEqPIIpcyNj6CkP60rfeMJqgUXvj_aUPg')"></div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex flex-col gap-6 px-4">
+<!-- Hero Section: Official Daily War -->
+<section class="w-full animate-fade-in-up">
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-xl font-bold tracking-tight flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-red" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                    Official Daily War
+                </h2>
+<span class="text-xs font-semibold px-2 py-1 rounded bg-red-500/10 text-red-500 animate-pulse border border-red-500/20">LIVE NOW</span>
+</div>
+<!-- The Diagonal Card -->
+<div class="relative w-full aspect-[4/3] sm:aspect-[2/1] rounded-3xl overflow-hidden shadow-neon group cursor-pointer transition-transform hover:scale-[1.01] duration-300">
+<!-- Background Gradient -->
+<div class="absolute inset-0 diagonal-split"></div>
+<!-- Content Container -->
+<div class="relative w-full h-full">
+<!-- Option A (Top Left) -->
+<div class="absolute top-0 left-0 w-[60%] h-[60%] p-6 flex flex-col justify-start items-start z-10">
+<span class="text-xs font-bold bg-black/20 text-white/90 px-2 py-1 rounded mb-2 backdrop-blur-sm">OPTION A</span>
+<h3 class="text-4xl sm:text-5xl font-black text-white drop-shadow-md tracking-tight">CATS</h3>
+<p class="text-white/80 font-medium mt-1 text-sm sm:text-base">The fuzzy overlords</p>
+</div>
+<!-- Option B (Bottom Right) -->
+<div class="absolute bottom-0 right-0 w-[60%] h-[60%] p-6 flex flex-col justify-end items-end z-10 text-right">
+<p class="text-black/70 font-bold mt-1 text-sm sm:text-base mb-1">Loyal companions</p>
+<h3 class="text-4xl sm:text-5xl font-black text-slate-900 drop-shadow-sm tracking-tight">DOGS</h3>
+<span class="text-xs font-bold bg-white/30 text-slate-900 px-2 py-1 rounded mt-2 backdrop-blur-sm">OPTION B</span>
+</div>
+<!-- VS Badge (Center) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+<div class="flex items-center justify-center size-16 bg-background-dark rounded-full border-4 border-background-dark shadow-2xl">
+<span class="text-2xl font-black italic text-white tracking-widest">VS</span>
+</div>
+</div>
+</div>
+<!-- Texture Overlay (Cyberpunk Grid) -->
+<div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] pointer-events-none mix-blend-overlay"></div>
+<!-- Stats Overlay -->
+<div class="absolute bottom-3 left-4 z-20">
+<p class="text-[10px] font-bold text-white/60 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-md">12,402 VOTES</p>
+</div>
+</div>
+</section>
+<!-- Community Feed -->
+<section class="flex flex-col gap-4 mt-2">
+<div class="flex items-center justify-between px-1">
+<h2 class="text-lg font-bold tracking-tight text-slate-800 dark:text-slate-200">Community Polls</h2>
+<button class="text-primary text-sm font-semibold hover:text-primary/80">View All</button>
+</div>
+<!-- Feed Item 1 -->
+<article class="bg-white dark:bg-card-dark p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-white/5 relative overflow-hidden group">
+<!-- User Info -->
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center" data-alt="Avatar of user pizza_lover_99" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCer-5m7sbOgdJ-AXJ9QtFnmrVP5CYCU_QAf8enftrcfrYzj8IsiVuV72bTVQ4Fj1DlZhePK1dG0E7QU4HTvkA88F6bvpe84B6ZpNdwJejdEAF8BvqLVHG5RYTIhkpK8PMVdgYa6FO4BZ7E3iDI8joJLvb6dSAUMdHbPyr8iu7k8Ei8QWoFZ6aoFmTpmzt3Ztk7XU6ZKsxl-jNYPvNc3BSarFowsTGRBMcNEjNvEBcMzok4Kk03CeeP1XsRjVhIhGQZD6gvH2kS5_k')"></div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">@pizza_lover_99</span>
+<span class="text-[10px] text-slate-400">2 hours ago</span>
+</div>
+</div>
+<button class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<!-- Question -->
+<h3 class="text-xl font-bold mb-4 leading-snug">Best Pizza Topping? 🍕</h3>
+<!-- Voting Bars -->
+<div class="relative w-full h-12 bg-slate-800 rounded-lg overflow-hidden flex">
+<!-- Option A (Red) -->
+<div class="h-full bg-neon-red/90 flex items-center justify-between px-3 relative group/bar hover:bg-neon-red transition-colors cursor-pointer" style="width: 40%">
+<span class="text-xs font-bold text-white z-10 truncate mr-2">Pineapple</span>
+<span class="text-sm font-black text-white/90 z-10">40%</span>
+<div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
+</div>
+<!-- Option B (Cyan) -->
+<div class="h-full bg-neon-cyan/90 flex items-center justify-between px-3 relative group/bar hover:bg-neon-cyan transition-colors cursor-pointer" style="width: 60%">
+<span class="text-sm font-black text-slate-900/90 z-10">60%</span>
+<span class="text-xs font-bold text-slate-900 z-10 truncate ml-2">Pepperoni</span>
+<div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
+</div>
+<!-- Divider -->
+<div class="absolute left-[40%] top-0 bottom-0 w-1 bg-background-dark/50 -skew-x-12 origin-bottom transform -translate-x-1/2 z-20"></div>
+</div>
+<!-- Footer -->
+<div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+<span>2,391 votes</span>
+<div class="flex gap-3">
+<button class="flex items-center gap-1 hover:text-primary"><span class="material-symbols-outlined text-[16px]">chat_bubble</span> 42</button>
+<button class="flex items-center gap-1 hover:text-primary"><span class="material-symbols-outlined text-[16px]">share</span> Share</button>
+</div>
+</div>
+</article>
+<!-- Feed Item 2 -->
+<article class="bg-white dark:bg-card-dark p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-white/5 relative overflow-hidden group">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center" data-alt="Avatar of user travel_bug" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAXHYYKxqVyTYpFa25_fC-V9xGK316l38l05PMEV8DxS8yA235HPOhYNZMMatMHQNKsJ57TPUh4mJoVPSu-pLsU3FyVWH2XuKogN6PAXT2rv95PHfguUYMurKNNghb9_2QWtQDaU46Z1o_7rSoRAZIKBw4JIpC6sli2o7pCFgvbc-tM5nw3zmVNd9Oq5L17EndizX8xd0ItECwx7oXoNUOKiExCMoCgBmFDZH7Ys-kkXqlaI9xnBG2u9zzIx4MtxYWiJJDP6owGVX8')"></div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">@travel_bug</span>
+<span class="text-[10px] text-slate-400">5 hours ago</span>
+</div>
+</div>
+<button class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<h3 class="text-xl font-bold mb-4 leading-snug">Dream Vacation? ✈️</h3>
+<div class="relative w-full h-12 bg-slate-800 rounded-lg overflow-hidden flex">
+<div class="h-full bg-neon-red/90 flex items-center justify-between px-3 relative group/bar hover:bg-neon-red transition-colors cursor-pointer" style="width: 20%">
+<span class="text-xs font-bold text-white z-10 truncate">Mtns</span>
+<span class="text-sm font-black text-white/90 z-10">20%</span>
+</div>
+<div class="h-full bg-neon-cyan/90 flex items-center justify-between px-3 relative group/bar hover:bg-neon-cyan transition-colors cursor-pointer" style="width: 80%">
+<span class="text-sm font-black text-slate-900/90 z-10">80%</span>
+<span class="text-xs font-bold text-slate-900 z-10 truncate">Tropical Beach</span>
+</div>
+<div class="absolute left-[20%] top-0 bottom-0 w-1 bg-background-dark/50 -skew-x-12 origin-bottom transform -translate-x-1/2 z-20"></div>
+</div>
+<div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+<span>8,102 votes</span>
+<div class="flex gap-3">
+<button class="flex items-center gap-1 hover:text-primary"><span class="material-symbols-outlined text-[16px]">chat_bubble</span> 128</button>
+<button class="flex items-center gap-1 hover:text-primary"><span class="material-symbols-outlined text-[16px]">share</span> Share</button>
+</div>
+</div>
+</article>
+<!-- Feed Item 3 -->
+<article class="bg-white dark:bg-card-dark p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-white/5 relative overflow-hidden group">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover bg-center" data-alt="Avatar of user caffeine_addict" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC4Y-SkpSv6B6niuhRmd4KqyPtfqLDd0kCJCmZGZvqLUGNBi8O-LC5H6Fo0rE8jyV_RcW-UHsfF8FAZIG84cT24C0eBrnqVYSjQnWv8BfPJycwk0_spVZRbAIyRTW0nT44lgmLkQzDdIUykW_Rw0f5XAKjhWW7BYrUuf8RXKH-OliLSEOM2-AJ5Q8r3kbZHUisUUFFfEVzLIHSgLetkXtrV62Mvh_tgpX5GwsOAgfTIeGl4R0bVinue5Vthl4unbsvEsn_P0x6ixoM')"></div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">@caffeine_addict</span>
+<span class="text-[10px] text-slate-400">12 mins ago</span>
+</div>
+</div>
+<button class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<h3 class="text-xl font-bold mb-4 leading-snug">Morning Fuel ☕️</h3>
+<div class="relative w-full h-12 bg-slate-800 rounded-lg overflow-hidden flex">
+<div class="h-full bg-neon-red/90 flex items-center justify-between px-3 relative group/bar hover:bg-neon-red transition-colors cursor-pointer" style="width: 70%">
+<span class="text-xs font-bold text-white z-10 truncate">Black Coffee</span>
+<span class="text-sm font-black text-white/90 z-10">70%</span>
+</div>
+<div class="h-full bg-neon-cyan/90 flex items-center justify-between px-3 relative group/bar hover:bg-neon-cyan transition-colors cursor-pointer" style="width: 30%">
+<span class="text-sm font-black text-slate-900/90 z-10">30%</span>
+<span class="text-xs font-bold text-slate-900 z-10 truncate">Herbal Tea</span>
+</div>
+<div class="absolute left-[70%] top-0 bottom-0 w-1 bg-background-dark/50 -skew-x-12 origin-bottom transform -translate-x-1/2 z-20"></div>
+</div>
+<div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+<span>543 votes</span>
+<div class="flex gap-3">
+<button class="flex items-center gap-1 hover:text-primary"><span class="material-symbols-outlined text-[16px]">chat_bubble</span> 12</button>
+<button class="flex items-center gap-1 hover:text-primary"><span class="material-symbols-outlined text-[16px]">share</span> Share</button>
+</div>
+</div>
+</article>
+<div class="h-20 w-full"></div> <!-- Spacer for scrolling -->
+</section>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-5 z-50 flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-lg shadow-primary/40 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full glass-nav z-40 pb-5 pt-3 px-6">
+<div class="flex items-center justify-around w-full">
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-[10px] font-medium text-primary">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-slate-300 transition-colors">search</span>
+<span class="text-[10px] font-medium text-slate-500 group-hover:text-slate-300">Search</span>
+</button>
+<!-- Spacer for visual balance if we wanted, but evenly spaced 4 items is good too. Since FAB is right, let's keep nav balanced. -->
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-slate-300 transition-colors">bolt</span>
+<span class="text-[10px] font-medium text-slate-500 group-hover:text-slate-300">Trending</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-slate-300 transition-colors">person</span>
+<span class="text-[10px] font-medium text-slate-500 group-hover:text-slate-300">Profile</span>
+</button>
+</div>
+</nav>
+</body></html>
