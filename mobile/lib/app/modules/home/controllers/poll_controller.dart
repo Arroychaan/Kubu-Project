@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/poll_model.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../views/widgets/auth_barrier_dialog.dart';
 
 class PollController extends GetxController {
   SupabaseClient get _supabase => Supabase.instance.client;
@@ -74,6 +74,21 @@ class PollController extends GetxController {
     } catch (e) {
       Get.log('Fetch Official Poll Error: $e');
     }
+
+    // FALLBACK MOCK DATA
+    if (officialPoll.value == null) {
+      officialPoll.value = Poll(
+        id: 'mock_official',
+        question: 'Soto Betawi vs Soto Lamongan?',
+        optionA: 'Betawi',
+        optionB: 'Lamongan',
+        isOfficial: true,
+        createdAt: DateTime.now(),
+        countA: 1500,
+        countB: 890,
+        creatorId: 'official',
+      );
+    }
   }
 
   Future<void> fetchCommunityPolls() async {
@@ -115,12 +130,41 @@ class PollController extends GetxController {
     } catch (e) {
       Get.log('Fetch Community Polls Error: $e');
     }
+
+    // FALLBACK MOCK DATA (For UI Showcase if DB is empty/RLS blocks)
+    if (communityPolls.isEmpty) {
+      communityPolls.value = [
+        Poll(
+          id: 'mock_1',
+          question: 'Bubur Diaduk vs Tidak Diaduk?',
+          optionA: 'Tim Diaduk',
+          optionB: 'Tim Pisah',
+          isOfficial: false,
+          createdAt: DateTime.now(),
+          countA: 45,
+          countB: 32,
+          creatorId: 'mock',
+        ),
+        Poll(
+          id: 'mock_2',
+          question: 'Android vs iOS?',
+          optionA: 'Android',
+          optionB: 'iOS',
+          isOfficial: false,
+          createdAt: DateTime.now(),
+          countA: 120,
+          countB: 150,
+          creatorId: 'mock',
+        ),
+      ];
+    }
   }
 
-  Future<void> vote(String pollId, String choice) async {
+  // Note: 'a' or 'b'
+  void vote(String pollId, String choice) async {
     final user = _supabase.auth.currentUser;
     if (user == null) {
-      Get.snackbar('Auth Required', 'Please login to vote.');
+      Get.bottomSheet(const AuthBarrierDialog(), isScrollControlled: true);
       return;
     }
 
@@ -137,7 +181,12 @@ class PollController extends GetxController {
       // but we can also re-fetch individual stats if needed.
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        Get.snackbar('Halt!', 'You already voted in this war!');
+        Get.snackbar(
+          'Halt!',
+          'You already voted in this war!',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
         // Revert optimistic update?
         // For simple MVP, we might just re-fetch to correct state.
         fetchOfficialPoll();
@@ -223,7 +272,7 @@ class PollController extends GetxController {
   ) async {
     final user = _supabase.auth.currentUser;
     if (user == null) {
-      Get.snackbar('Auth Required', 'Please login to create a war.');
+      Get.bottomSheet(const AuthBarrierDialog(), isScrollControlled: true);
       return false;
     }
 

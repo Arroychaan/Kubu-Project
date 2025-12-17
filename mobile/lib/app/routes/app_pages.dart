@@ -7,19 +7,23 @@ import '../middlewares/auth_middleware.dart';
 import 'app_routes.dart';
 
 class AppPages {
-  static const initial = Routes.login;
+  // Guest-First: Start at Home
+  static const initial = Routes.home;
 
   static final routes = [
     GetPage(
       name: Routes.home,
       page: () => const HomeView(),
       binding: HomeBinding(),
-      middlewares: [AuthMiddleware()],
+      // Remove AuthMiddleware to allow guest access
+      // middlewares: [AuthMiddleware()],
     ),
     GetPage(
       name: Routes.login,
       page: () => const LoginView(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [
+        AuthMiddleware(),
+      ], // Keep here to redirect if already logged in? Or valid to revisit
     ),
   ];
 }

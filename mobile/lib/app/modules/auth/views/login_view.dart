@@ -240,14 +240,15 @@ class LoginView extends GetView<AuthController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildSocialButton(Icons.facebook),
+                        _buildSocialButton(Icons.facebook, onTap: () {}),
                         const SizedBox(width: 24),
                         _buildSocialButton(
                           Icons.g_mobiledata_rounded,
                           isGoogle: true,
+                          onTap: () => controller.signInWithGoogle(),
                         ),
                         const SizedBox(width: 24),
-                        _buildSocialButton(Icons.apple),
+                        _buildSocialButton(Icons.apple, onTap: () {}),
                       ],
                     ),
 
@@ -327,17 +328,24 @@ class LoginView extends GetView<AuthController> {
     );
   }
 
-  Widget _buildSocialButton(IconData icon, {bool isGoogle = false}) {
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: const Color(0xFF131619),
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF2D3339)),
-      ),
-      child: Center(
-        child: Icon(icon, color: Colors.white, size: isGoogle ? 28 : 22),
+  Widget _buildSocialButton(
+    IconData icon, {
+    bool isGoogle = false,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFF131619),
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFF2D3339)),
+        ),
+        child: Center(
+          child: Icon(icon, color: Colors.white, size: isGoogle ? 28 : 22),
+        ),
       ),
     );
   }

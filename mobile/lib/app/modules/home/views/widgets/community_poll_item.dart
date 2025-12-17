@@ -19,10 +19,18 @@ class CommunityPollItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16), // Increased padding
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,24 +151,53 @@ class CommunityPollItem extends StatelessWidget {
           ),
 
           // Action Buttons
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton(
-                onPressed: onVoteA,
-                child: Text(
-                  'VOTE ${poll.optionA.toUpperCase()}',
-                  style: const TextStyle(fontSize: 10, color: AppTheme.kubuRed),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onVoteA,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.kubuRed.withValues(alpha: 0.1),
+                    foregroundColor: AppTheme.kubuRed,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text(
+                    poll.optionA,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
-              TextButton(
-                onPressed: onVoteB,
-                child: Text(
-                  'VOTE ${poll.optionB.toUpperCase()}',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: AppTheme.kubuCyan,
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onVoteB,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.kubuCyan.withValues(alpha: 0.1),
+                    foregroundColor: AppTheme.kubuCyan,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text(
+                    poll.optionB,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),

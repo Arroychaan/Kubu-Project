@@ -177,4 +177,20 @@ class AuthController extends GetxController {
       log('Profile Init Error: $e');
     }
   }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.kubu://login-callback',
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Google Sign In Failed',
+        e.toString(),
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+      );
+    }
+  }
 }

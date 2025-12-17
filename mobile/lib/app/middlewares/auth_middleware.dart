@@ -9,7 +9,7 @@ class AuthMiddleware extends GetMiddleware {
     final session = Supabase.instance.client.auth.currentSession;
 
     // If not logged in & trying to access protected route -> Go to Login
-    if (session == null) {
+    if (session == null && route != Routes.login) {
       return const RouteSettings(name: Routes.login);
     }
 
