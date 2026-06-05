@@ -11,6 +11,8 @@ interface RawProfile {
     avatar_url: string | null;
     daily_post_count: number | null;
     last_post_date: string | null;
+    is_admin: boolean | null;
+    points: number | null;
 }
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -22,7 +24,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' && session?.user) {
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
                 setUser(session.user);
                 // Fetch profile
                 const { data } = await supabase
@@ -37,7 +39,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                         id: profile.id,
                         username: profile.username || 'Anonymous',
                         daily_post_count: profile.daily_post_count || 0,
-                        avatar_url: profile.avatar_url || ''
+                        avatar_url: profile.avatar_url || '',
+                        is_admin: profile.is_admin || false,
+                        points: profile.points ?? 50
                     });
                 }
             } else if (event === 'SIGNED_OUT') {

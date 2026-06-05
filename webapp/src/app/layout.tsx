@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import AuthProvider from "@/components/AuthProvider";
 import { Suspense } from "react";
+import ConditionalNavbar from "@/components/ConditionalNavbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,12 +17,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KUBU - Viral Social Voting",
-  description: "Pick a side. Watch the war ensue. The ultimate binary voting battleground.",
-  keywords: ["voting", "polls", "social", "viral", "debate"],
+  title: "Kubu — Suara Kamu, Pilihanmu",
+  description: "Platform jajak pendapat sosial tempat opini didiskusikan secara terbuka, cerdas, dan transparan. Tentukan pilihanmu, dukung argumen terbaik, dan pantau dinamika opini secara real-time.",
+  keywords: ["polling", "voting", "debat", "sosial", "opini publik", "diskusi"],
   openGraph: {
-    title: "KUBU - Viral Social Voting",
-    description: "Pick a side. Watch the war ensue.",
+    title: "Kubu — Suara Kamu, Pilihanmu",
+    description: "Platform diskusi opini dan jajak pendapat sosial paling transparan dan real-time.",
     type: "website",
   },
 };
@@ -32,17 +33,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="id" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neon-dark min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
         <AuthProvider>
-          <Suspense fallback={<div className="fixed top-0 left-0 right-0 h-16 bg-neon-dark/80 backdrop-blur-xl border-b border-white/5" />}>
-            <Navbar />
-          </Suspense>
-          <div className="pt-16">
+          <ConditionalNavbar>
+            <Suspense fallback={<div className="fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl border-b border-brand-border" />}>
+              <Navbar />
+            </Suspense>
+          </ConditionalNavbar>
+          <ConditionalNavbar paddingOnly>
             {children}
-          </div>
+          </ConditionalNavbar>
         </AuthProvider>
       </body>
     </html>

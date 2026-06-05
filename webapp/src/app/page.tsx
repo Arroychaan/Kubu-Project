@@ -1,5 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { Poll } from '@/types';
 import HomeClient from '@/components/HomeClient';
 
@@ -20,32 +19,12 @@ interface RawPollStats {
   count_b: number;
 }
 
-// Create Supabase client for Server Components (without generic typing to avoid 'never' issues)
-async function createSupabaseClient() {
-  const cookieStore = await cookies();
-
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {
-          // Server Components cannot set cookies
-        },
-      },
-    }
-  );
-}
-
 export default async function Home(props: {
   searchParams: Promise<{ search?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const searchQuery = searchParams.search || '';
-  const supabase = await createSupabaseClient();
+  const supabase = await createSupabaseServerClient();
 
   // Fetch Official Poll
   let officialPoll: Poll | null = null;
@@ -126,20 +105,20 @@ export default async function Home(props: {
   }
 
   return (
-    <main className="min-h-screen bg-neon-dark relative overflow-hidden">
-      {/* Background Effects */}
+    <main className="min-h-screen bg-background relative overflow-hidden">
+      {/* Subtle Atmospheric Gradient Overlays */}
       <div className="fixed inset-0 pointer-events-none -z-10">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-neon-pink/15 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-neon-cyan/10 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-purple-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-brand-blue/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-choice-right/5 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-choice-left/5 rounded-full blur-[100px]" />
       </div>
 
       {/* Grid Pattern Overlay */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.02] -z-10"
+        className="fixed inset-0 pointer-events-none opacity-[0.4] -z-10"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)`,
+          backgroundSize: '48px 48px'
         }}
       />
 

@@ -7,8 +7,8 @@ import { MouseEvent } from "react";
 interface BattleBarProps {
     countA: number;
     countB: number;
-    colorA?: string; // Tailwind bg class, defaults to neon-pink
-    colorB?: string; // Tailwind bg class, defaults to neon-cyan
+    colorA?: string; // Tailwind bg class
+    colorB?: string; // Tailwind bg class
     onVote?: (option: 'a' | 'b') => void;
     hasVoted?: boolean;
     labelA?: string;
@@ -19,8 +19,8 @@ interface BattleBarProps {
 export default function BattleBar({
     countA,
     countB,
-    colorA = 'bg-neon-pink',
-    colorB = 'bg-neon-cyan',
+    colorA = 'bg-choice-left',
+    colorB = 'bg-choice-right',
     onVote,
     hasVoted = false,
     labelA = 'A',
@@ -37,9 +37,8 @@ export default function BattleBar({
     const displayPercentB = hasVoted ? percentB : 50;
 
     // Skew angle for diagonal split (in degrees)
-    const SKEW_DEG = 15;
+    const SKEW_DEG = 12;
 
-    // Handler
     const handleVote = (e: MouseEvent, option: 'a' | 'b') => {
         e.stopPropagation();
         if (!hasVoted && onVote) {
@@ -50,31 +49,30 @@ export default function BattleBar({
     return (
         <div className={twMerge("w-full relative h-28 md:h-32 select-none", className)}>
             {/* Main Container */}
-            <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] bg-gray-950 border border-white/10">
+            <div className="relative w-full h-full rounded-2xl overflow-hidden bg-zinc-950 border border-brand-border/80">
 
                 {/* ===== OPTION B (Right Side - Background Layer) ===== */}
                 <div
                     className={twMerge(
-                        "absolute inset-0 flex items-center justify-end",
-                        colorB
+                        "absolute inset-0 flex items-center justify-end bg-gradient-to-br from-choice-right to-sky-600/90"
                     )}
                 >
                     {/* B Content - Always visible on right */}
-                    <div className="z-10 pr-6 md:pr-8 text-right">
+                    <div className="z-10 pr-6 md:pr-10 text-right">
                         <AnimatePresence mode="wait">
                             {hasVoted ? (
                                 <motion.div
                                     key="voted-b"
-                                    initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                                    initial={{ opacity: 0, scale: 0.85, y: 5 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
-                                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                    transition={{ type: "spring", stiffness: 220, damping: 18 }}
                                     className="flex flex-col items-end"
                                 >
-                                    <span className="text-3xl md:text-4xl font-black text-black drop-shadow-sm">
+                                    <span className="text-3xl md:text-4xl font-black text-white drop-shadow-md tracking-tight">
                                         {Math.round(displayPercentB)}%
                                     </span>
-                                    <span className="text-xs md:text-sm font-bold text-black/70 uppercase tracking-wider truncate max-w-[80px] md:max-w-[120px]">
+                                    <span className="text-[10px] font-black text-white/80 uppercase tracking-widest truncate max-w-[120px] md:max-w-[180px]">
                                         {labelB}
                                     </span>
                                 </motion.div>
@@ -83,13 +81,13 @@ export default function BattleBar({
                                     key="vote-b"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={(e) => handleVote(e, 'b')}
-                                    className="px-4 md:px-6 py-2 md:py-3 bg-black/20 hover:bg-black/30 text-black font-black text-sm md:text-base rounded-xl border-2 border-black/20 hover:border-black/40 uppercase tracking-widest transition-colors shadow-lg cursor-pointer"
+                                    className="px-5 py-2.5 bg-black/50 hover:bg-black/75 text-white font-black text-xs md:text-sm rounded-xl border border-white/10 hover:border-white/25 uppercase tracking-widest transition-all shadow-lg cursor-pointer backdrop-blur-md duration-150 active:scale-95"
                                 >
-                                    {labelB}
+                                    Pilih {labelB}
                                 </motion.button>
                             )}
                         </AnimatePresence>
@@ -99,39 +97,37 @@ export default function BattleBar({
                 {/* ===== OPTION A (Left Side - Foreground with Diagonal Clip) ===== */}
                 <motion.div
                     className={twMerge(
-                        "absolute top-0 bottom-0 left-0 h-full flex items-center justify-start overflow-hidden",
-                        colorA
+                        "absolute top-0 bottom-0 left-0 h-full flex items-center justify-start overflow-hidden bg-gradient-to-br from-choice-left to-rose-600/90"
                     )}
                     initial={{ width: "50%" }}
                     animate={{ width: `${displayPercentA}%` }}
                     transition={{
                         type: "spring",
-                        stiffness: 50,
-                        damping: 12,
-                        mass: 1
+                        stiffness: 60,
+                        damping: 14,
+                        mass: 0.9
                     }}
                     style={{
                         // Diagonal cut using clip-path
-                        // Creates a slanted edge on the right side
-                        clipPath: `polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%)`,
+                        clipPath: `polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%)`,
                     }}
                 >
                     {/* A Content */}
-                    <div className="z-10 pl-6 md:pl-8 text-left">
+                    <div className="z-10 pl-6 md:pl-10 text-left">
                         <AnimatePresence mode="wait">
                             {hasVoted ? (
                                 <motion.div
                                     key="voted-a"
-                                    initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                                    initial={{ opacity: 0, scale: 0.85, y: 5 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
-                                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                    transition={{ type: "spring", stiffness: 220, damping: 18 }}
                                     className="flex flex-col items-start"
                                 >
-                                    <span className="text-3xl md:text-4xl font-black text-white drop-shadow-md">
+                                    <span className="text-3xl md:text-4xl font-black text-white drop-shadow-md tracking-tight">
                                         {Math.round(displayPercentA)}%
                                     </span>
-                                    <span className="text-xs md:text-sm font-bold text-white/70 uppercase tracking-wider truncate max-w-[80px] md:max-w-[120px]">
+                                    <span className="text-[10px] font-black text-white/80 uppercase tracking-widest truncate max-w-[120px] md:max-w-[180px]">
                                         {labelA}
                                     </span>
                                 </motion.div>
@@ -140,38 +136,38 @@ export default function BattleBar({
                                     key="vote-a"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={(e) => handleVote(e, 'a')}
-                                    className="px-4 md:px-6 py-2 md:py-3 bg-white/20 hover:bg-white/30 text-white font-black text-sm md:text-base rounded-xl border-2 border-white/20 hover:border-white/40 uppercase tracking-widest transition-colors shadow-lg cursor-pointer"
+                                    className="px-5 py-2.5 bg-black/50 hover:bg-black/75 text-white font-black text-xs md:text-sm rounded-xl border border-white/10 hover:border-white/25 uppercase tracking-widest transition-all shadow-lg cursor-pointer backdrop-blur-md duration-150 active:scale-95"
                                 >
-                                    {labelA}
+                                    Pilih {labelA}
                                 </motion.button>
                             )}
                         </AnimatePresence>
                     </div>
 
-                    {/* Shimmer Effect Overlay */}
+                    {/* Subtle Shimmer Overlay */}
                     <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"
                         initial={{ x: "-100%", skewX: -20 }}
                         animate={{ x: "200%" }}
                         transition={{
                             repeat: Infinity,
-                            duration: 2.5,
+                            duration: 3,
                             ease: "easeInOut",
-                            repeatDelay: 1
+                            repeatDelay: 1.5
                         }}
                     />
                 </motion.div>
 
-                {/* ===== DIAGONAL EDGE GLOW EFFECT ===== */}
+                {/* ===== DIAGONAL GLOW INTERSECTION ===== */}
                 <motion.div
-                    className="absolute top-0 bottom-0 w-1 bg-white/50 blur-sm pointer-events-none z-15"
-                    initial={{ left: "calc(50% - 12px)" }}
-                    animate={{ left: `calc(${displayPercentA}% - 12px)` }}
-                    transition={{ type: "spring", stiffness: 50, damping: 12 }}
+                    className="absolute top-0 bottom-0 w-[1.5px] bg-white/40 shadow-[0_0_8px_rgba(255,255,255,0.6)] pointer-events-none z-15"
+                    initial={{ left: "calc(50% - 10px)" }}
+                    animate={{ left: `calc(${displayPercentA}% - 10px)` }}
+                    transition={{ type: "spring", stiffness: 60, damping: 14 }}
                     style={{
                         transform: `skewX(-${SKEW_DEG}deg)`,
                     }}
@@ -181,24 +177,24 @@ export default function BattleBar({
                 <motion.div
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
                     initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: -12 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 10, delay: 0.2 }}
+                    animate={{ scale: 1, rotate: -8 }}
+                    transition={{ type: "spring", stiffness: 220, damping: 12, delay: 0.15 }}
                 >
-                    <div className="bg-gray-950 text-white text-xs md:text-sm font-black px-3 py-1.5 rounded-md border-2 border-white/30 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                        ⚡ VS
+                    <div className="bg-zinc-950/80 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-zinc-800/80 shadow-2xl tracking-widest uppercase">
+                        VS
                     </div>
                 </motion.div>
 
-                {/* ===== TOTAL VOTES INDICATOR ===== */}
+                {/* ===== TOTAL SUARA BADGE ===== */}
                 {hasVoted && total > 0 && (
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="absolute bottom-1 left-1/2 -translate-x-1/2 z-20"
+                        transition={{ delay: 0.25 }}
+                        className="absolute bottom-1.5 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
                     >
-                        <span className="text-[10px] font-mono text-white/40 bg-black/50 px-2 py-0.5 rounded-full">
-                            {total.toLocaleString()} votes
+                        <span className="text-[9px] font-black text-zinc-400 bg-black/85 px-2.5 py-0.5 border border-brand-border/60 rounded-md tracking-wider uppercase">
+                            {total.toLocaleString()} suara
                         </span>
                     </motion.div>
                 )}

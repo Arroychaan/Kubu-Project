@@ -1,7 +1,6 @@
 'use server';
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 
 // Raw types for Supabase responses
 interface RawProfile {
@@ -32,33 +31,6 @@ interface RawVote {
     choice: 'a' | 'b' | null;
 }
 
-// Create Supabase client for Server Actions (without generic to avoid 'never' issues)
-async function createSupabaseServerClient() {
-    const cookieStore = await cookies();
-
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll();
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        );
-                    } catch {
-                        // The `setAll` method was called from a Server Component.
-                        // This can be ignored if you have middleware refreshing sessions.
-                    }
-                },
-            },
-        }
-    );
-}
-
 // Response type for consistent API
 interface ActionResponse {
     success: boolean;
@@ -79,7 +51,7 @@ export async function vote(pollId: string, choice: 'a' | 'b'): Promise<ActionRes
         if (authError || !user) {
             return {
                 success: false,
-                message: 'You must be logged in to vote.'
+                message: 'Anda harus masuk terlebih dahulu untuk memberikan suara.'
             };
         }
 
@@ -98,28 +70,31 @@ export async function vote(pollId: string, choice: 'a' | 'b'): Promise<ActionRes
             if (voteError.code === '23505') {
                 return {
                     success: false,
-                    message: 'You have already voted on this poll.'
+                    message: 'Anda sudah memberikan suara pada polling ini.'
                 };
             }
 
             console.error('Vote error:', voteError);
             return {
                 success: false,
-                message: 'Failed to submit vote. Please try again.'
+                message: 'Gagal mengirim suara. Silakan coba lagi.'
             };
         }
 
-        // 4. Success
+        // 4. Increment User Points by 5
+        await supabase.rpc('increment_user_points', { p_user_id: user.id, p_amount: 5 });
+
+        // 5. Success
         return {
             success: true,
-            message: 'Vote submitted successfully!'
+            message: 'Suara berhasil dikirim!'
         };
 
     } catch (error) {
         console.error('Unexpected vote error:', error);
         return {
             success: false,
-            message: 'An unexpected error occurred.'
+            message: 'Terjadi kesalahan yang tidak terduga.'
         };
     }
 }
@@ -143,7 +118,7 @@ export async function createPoll(
         if (authError || !user) {
             return {
                 success: false,
-                message: 'You must be logged in to create a poll.'
+                message: 'Anda harus masuk terlebih dahulu untuk membuat polling.'
             };
         }
 
@@ -151,21 +126,21 @@ export async function createPoll(
         if (!question.trim() || !optionA.trim() || !optionB.trim()) {
             return {
                 success: false,
-                message: 'Please fill in all fields.'
+                message: 'Mohon isi semua kolom yang diperlukan.'
             };
         }
 
         if (question.length > 200) {
             return {
                 success: false,
-                message: 'Question is too long (max 200 characters).'
+                message: 'Pertanyaan terlalu panjang (maksimal 200 karakter).'
             };
         }
 
         if (optionA.length > 50 || optionB.length > 50) {
             return {
                 success: false,
-                message: 'Options are too long (max 50 characters each).'
+                message: 'Pilihan terlalu panjang (maksimal 50 karakter masing-masing).'
             };
         }
 
@@ -194,7 +169,7 @@ export async function createPoll(
                 console.error('Profile fetch error:', profileError);
                 return {
                     success: false,
-                    message: 'Could not verify your account. Please try again.'
+                    message: 'Tidak dapat memverifikasi akun Anda. Silakan coba lagi.'
                 };
             }
 
@@ -212,7 +187,7 @@ export async function createPoll(
                 console.error('Profile insert error:', profileInsertError);
                 return {
                     success: false,
-                    message: 'Could not create your profile. Please try again.'
+                    message: 'Tidak dapat membuat profil Anda. Silakan coba lagi.'
                 };
             }
 
@@ -236,7 +211,7 @@ export async function createPoll(
         if (lastPostDate === today && dailyCount >= dailyLimit) {
             return {
                 success: false,
-                message: `Daily limit reached! You can only create ${dailyLimit} polls per day. Try again tomorrow.`
+                message: `Batas harian tercapai! Anda hanya dapat membuat ${dailyLimit} polling per hari. Coba lagi besok.`
             };
         }
 
@@ -264,7 +239,7 @@ export async function createPoll(
             }
             return {
                 success: false,
-                message: 'Failed to create poll. Please try again.'
+                message: 'Gagal membuat polling. Silakan coba lagi.'
             };
         }
 
@@ -286,10 +261,13 @@ export async function createPoll(
             // Poll was created successfully, just log the warning
         }
 
+        // Increment User Points by 10
+        await supabase.rpc('increment_user_points', { p_user_id: user.id, p_amount: 10 });
+
         // 8. Success
         return {
             success: true,
-            message: 'Poll created successfully!',
+            message: 'Polling berhasil dibuat!',
             data: { pollId: newPoll?.id }
         };
 
@@ -297,7 +275,7 @@ export async function createPoll(
         console.error('Unexpected createPoll error:', error);
         return {
             success: false,
-            message: 'An unexpected error occurred.'
+            message: 'Terjadi kesalahan yang tidak terduga.'
         };
     }
 }
@@ -322,7 +300,7 @@ export async function getOfficialPoll(): Promise<ActionResponse> {
             console.error('Fetch official poll error:', error);
             return {
                 success: false,
-                message: 'No official poll found.'
+                message: 'Polling resmi tidak ditemukan.'
             };
         }
 
@@ -339,7 +317,7 @@ export async function getOfficialPoll(): Promise<ActionResponse> {
 
         return {
             success: true,
-            message: 'Official poll fetched.',
+            message: 'Polling resmi berhasil dimuat.',
             data: {
                 ...poll,
                 stats: {
@@ -353,7 +331,7 @@ export async function getOfficialPoll(): Promise<ActionResponse> {
         console.error('Unexpected getOfficialPoll error:', error);
         return {
             success: false,
-            message: 'An unexpected error occurred.'
+            message: 'Terjadi kesalahan yang tidak terduga.'
         };
     }
 }
@@ -383,7 +361,7 @@ export async function getCommunityPolls(limit = 10, offset = 0, searchQuery = ''
             console.error('Fetch community polls error:', error);
             return {
                 success: false,
-                message: 'Failed to fetch polls.'
+                message: 'Gagal memuat daftar polling.'
             };
         }
 
@@ -417,7 +395,7 @@ export async function getCommunityPolls(limit = 10, offset = 0, searchQuery = ''
 
         return {
             success: true,
-            message: 'Community polls fetched.',
+            message: 'Polling komunitas berhasil dimuat.',
             data: pollsWithStats
         };
 
@@ -425,7 +403,7 @@ export async function getCommunityPolls(limit = 10, offset = 0, searchQuery = ''
         console.error('Unexpected getCommunityPolls error:', error);
         return {
             success: false,
-            message: 'An unexpected error occurred.'
+            message: 'Terjadi kesalahan yang tidak terduga.'
         };
     }
 }
@@ -442,7 +420,7 @@ export async function checkUserVote(pollId: string): Promise<ActionResponse> {
         if (!user) {
             return {
                 success: true,
-                message: 'Not logged in.',
+                message: 'Belum masuk.',
                 data: { hasVoted: false, choice: null }
             };
         }
@@ -458,7 +436,7 @@ export async function checkUserVote(pollId: string): Promise<ActionResponse> {
             console.error('Vote lookup error:', voteError);
             return {
                 success: false,
-                message: 'Failed to check your vote.'
+                message: 'Gagal memeriksa suara Anda.'
             };
         }
 
@@ -466,7 +444,7 @@ export async function checkUserVote(pollId: string): Promise<ActionResponse> {
 
         return {
             success: true,
-            message: vote ? 'User has voted.' : 'User has not voted.',
+            message: vote ? 'Anda sudah memberikan suara.' : 'Anda belum memberikan suara.',
             data: {
                 hasVoted: !!vote,
                 choice: vote?.choice || null
@@ -477,7 +455,129 @@ export async function checkUserVote(pollId: string): Promise<ActionResponse> {
         console.error('Unexpected checkUserVote error:', error);
         return {
             success: false,
-            message: 'An unexpected error occurred.'
+            message: 'Terjadi kesalahan yang tidak terduga.'
+        };
+    }
+}
+
+// ============================================
+// SERVER ACTION: ADMIN TOGGLE OFFICIAL POLL
+// ============================================
+export async function toggleOfficialPoll(pollId: string, isOfficial: boolean): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, message: 'Silakan masuk terlebih dahulu.' };
+        }
+
+        // Verify admin profile
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .single();
+
+        if (!profile?.is_admin) {
+            return { success: false, message: 'Akses ditolak. Anda bukan administrator.' };
+        }
+
+        const { error } = await supabase
+            .from('polls')
+            .update({ is_official: isOfficial })
+            .eq('id', pollId);
+
+        if (error) {
+            console.error('Error toggling official status:', error);
+            return { success: false, message: 'Gagal memperbarui status polling.' };
+        }
+
+        return {
+            success: true,
+            message: isOfficial 
+                ? 'Jajak pendapat berhasil diatur menjadi Polling Resmi!' 
+                : 'Jajak pendapat berhasil diubah menjadi Polling Komunitas.'
+        };
+    } catch (error) {
+        console.error('Unexpected toggleOfficialPoll error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+// ============================================
+// SERVER ACTION: ADMIN UPDATE DAILY POLL LIMIT
+// ============================================
+export async function updateDailyPollLimit(limit: number): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return { success: false, message: 'Silakan masuk terlebih dahulu.' };
+        }
+
+        // Verify admin profile
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .single();
+
+        if (!profile?.is_admin) {
+            return { success: false, message: 'Akses ditolak. Anda bukan administrator.' };
+        }
+
+        const { error } = await supabase
+            .from('app_settings')
+            .upsert({ key: 'daily_poll_limit', value: limit.toString(), updated_at: new Date().toISOString() });
+
+        if (error) {
+            console.error('Error updating daily poll limit:', error);
+            return { success: false, message: 'Gagal memperbarui batas harian.' };
+        }
+
+        return {
+            success: true,
+            message: `Batas pembuatan jajak pendapat harian berhasil diubah menjadi ${limit} kali.`
+        };
+    } catch (error) {
+        console.error('Unexpected updateDailyPollLimit error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+// ============================================
+// SERVER ACTION: GET LEADERBOARD
+// ============================================
+export async function getLeaderboard(limit = 20): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, avatar_url, points, is_admin')
+            .order('points', { ascending: false, nullsFirst: false })
+            .limit(limit);
+
+        if (error) {
+            console.error('Fetch leaderboard error:', error);
+            return {
+                success: false,
+                message: 'Gagal memuat papan peringkat.'
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Papan peringkat berhasil dimuat.',
+            data: data || []
+        };
+    } catch (error) {
+        console.error('Unexpected getLeaderboard error:', error);
+        return {
+            success: false,
+            message: 'Terjadi kesalahan sistem.'
         };
     }
 }

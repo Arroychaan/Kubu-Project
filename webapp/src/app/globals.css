@@ -1,18 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0B101B;
-  --foreground: #ededed;
-  --neon-pink: #FF2E63;
-  --neon-cyan: #00E5FF;
+  --background: #050507;
+  --foreground: #F4F4F5;
+  --brand-blue: #0066FF;
+  --brand-card: #0D0D10;
+  --brand-border: #1E1E22;
+  --choice-left: #F43F5E;
+  --choice-right: #0EA5E9;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-neon-pink: var(--neon-pink);
-  --color-neon-cyan: var(--neon-cyan);
-  --color-neon-dark: #0B101B;
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-card: var(--brand-card);
+  --color-brand-border: var(--brand-border);
+  --color-choice-left: var(--choice-left);
+  --color-choice-right: var(--choice-right);
+  --color-neon-pink: var(--choice-left);
+  --color-neon-cyan: var(--choice-right);
+  --color-neon-dark: var(--background);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -23,18 +31,30 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  letter-spacing: -0.01em;
 }
 
-/* Scrollbar */
+/* Custom Selection */
+::selection {
+  background: rgba(0, 102, 255, 0.25);
+  color: #FFFFFF;
+}
+
+/* Minimalist Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: #27272A;
+  border-radius: 9999px;
 }
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3F3F46;
+}

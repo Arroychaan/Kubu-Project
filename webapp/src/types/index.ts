@@ -17,6 +17,7 @@ export interface Database {
                     daily_post_count: number | null
                     last_post_date: string | null
                     is_admin: boolean | null
+                    points: number | null
                 }
                 Insert: {
                     id: string
@@ -25,6 +26,7 @@ export interface Database {
                     daily_post_count?: number | null
                     last_post_date?: string | null
                     is_admin?: boolean | null
+                    points?: number | null
                 }
                 Update: {
                     id?: string
@@ -33,6 +35,7 @@ export interface Database {
                     daily_post_count?: number | null
                     last_post_date?: string | null
                     is_admin?: boolean | null
+                    points?: number | null
                 }
             }
             polls: {
@@ -164,4 +167,5 @@ export interface Profile {
     daily_post_count: number;
     avatar_url?: string;
     is_admin?: boolean;
+    points: number;
 }

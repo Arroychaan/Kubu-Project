@@ -6,7 +6,7 @@ import BattleBar from './BattleBar';
 import { vote, checkUserVote } from '@/app/actions';
 import { Poll } from '@/types';
 import { useAuthStore } from '@/store/useAuthStore';
-import { MessageCircle, Share2 } from 'lucide-react';
+import { MessageCircle, Share2, Info } from 'lucide-react';
 
 interface PollCardProps {
     poll: Poll;
@@ -19,7 +19,7 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
     const [hasVoted, setHasVoted] = useState(false);
     const [userChoice, setUserChoice] = useState<'a' | 'b' | null>(null);
     const [, startTransition] = useTransition();
-    const [message, setMessage] = useState<string | null>(null);
+    const [message, setMessage] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
 
     const { user } = useAuthStore();
     const [prevUser, setPrevUser] = useState(user);
@@ -56,8 +56,8 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
 
     const handleVote = (choice: 'a' | 'b') => {
         if (!user) {
-            setMessage('Please login to vote!');
-            setTimeout(() => setMessage(null), 3000);
+            setMessage({ type: 'error', text: 'Silakan masuk ke akun Anda terlebih dahulu untuk memberikan suara.' });
+            setTimeout(() => setMessage(null), 4000);
             return;
         }
 
@@ -78,23 +78,27 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                 else setCountB(c => c - 1);
                 setHasVoted(false);
                 setUserChoice(null);
-                setMessage(result.message);
+                setMessage({ type: 'error', text: result.message });
+                setTimeout(() => setMessage(null), 4000);
+            } else {
+                setMessage({ type: 'success', text: 'Suara Anda berhasil disimpan!' });
                 setTimeout(() => setMessage(null), 3000);
             }
         });
     };
 
     const handleShare = () => {
+        const shareText = `Ikuti jajak pendapat: "${poll.question}"\nKubu A: ${poll.option_a} vs Kubu B: ${poll.option_b}`;
         if (navigator.share) {
             navigator.share({
-                title: 'KUBU - ' + poll.question,
-                text: `Vote now: ${poll.option_a} vs ${poll.option_b}`,
+                title: 'KUBU - Jajak Pendapat Sosial',
+                text: shareText,
                 url: window.location.href
             });
         } else {
             navigator.clipboard.writeText(window.location.href);
-            setMessage('Link copied!');
-            setTimeout(() => setMessage(null), 2000);
+            setMessage({ type: 'info', text: 'Tautan berhasil disalin ke papan klip!' });
+            setTimeout(() => setMessage(null), 3000);
         }
     };
 
@@ -102,34 +106,36 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className={`w-full bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl overflow-hidden ${isHero ? 'p-6 md:p-8' : 'p-4 md:p-6'
-                }`}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className={`w-full bg-brand-card/50 border border-brand-border/80 rounded-2xl overflow-hidden transition-all duration-300 hover:border-zinc-700/60 hover:bg-brand-card ${
+                isHero ? 'p-6 md:p-8 border-brand-blue/35' : 'p-5 md:p-6'
+            }`}
         >
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                     {poll.is_official && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-neon-pink to-neon-cyan text-white text-[10px] font-bold rounded-full uppercase tracking-wider mb-2">
-                            ⚡ Official War
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-brand-blue/5 border border-brand-blue/20 text-brand-blue text-[9px] font-black rounded-md uppercase tracking-wider mb-3 select-none">
+                            ⚡ Polling Resmi
                         </span>
                     )}
-                    <h3 className={`font-bold text-white leading-tight ${isHero ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'
-                        }`}>
+                    <h3 className={`font-bold text-white leading-snug tracking-tight ${
+                        isHero ? 'text-lg md:text-xl font-black' : 'text-sm md:text-base'
+                    }`}>
                         {poll.question}
                     </h3>
                 </div>
             </div>
 
-            {/* Battle Bar */}
+            {/* Battle Bar comparison */}
             <div className={isHero ? 'my-6' : 'my-4'}>
                 <BattleBar
                     countA={countA}
                     countB={countB}
-                    colorA="bg-neon-pink"
-                    colorB="bg-neon-cyan"
+                    colorA="bg-choice-left"
+                    colorB="bg-choice-right"
                     onVote={handleVote}
                     hasVoted={hasVoted}
                     labelA={poll.option_a}
@@ -138,36 +144,49 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                 />
             </div>
 
-            {/* Message Toast */}
+            {/* Toast feedback inside card */}
             {message && (
                 <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-4 p-2 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-yellow-400 text-sm text-center"
+                    className={`mb-4 p-3 border border-brand-border/60 rounded-xl text-[10px] font-bold flex items-center gap-2 bg-zinc-950/45 ${
+                        message.type === 'error'
+                            ? 'text-red-400 border-red-500/15'
+                            : message.type === 'success'
+                            ? 'text-green-400 border-green-500/15'
+                            : 'text-zinc-300 border-brand-blue/15'
+                    }`}
                 >
-                    {message}
+                    <Info className="w-3.5 h-3.5 shrink-0" />
+                    <span>{message.text}</span>
                 </motion.div>
             )}
 
-            {/* Footer Stats */}
-            <div className="flex items-center justify-between text-white/40 text-xs md:text-sm">
+            {/* Footer details */}
+            <div className="flex items-center justify-between text-zinc-500 text-[11px] font-bold pt-2 select-none">
                 <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1">
-                        <MessageCircle className="w-4 h-4" />
-                        {total.toLocaleString()} votes
+                    <span className="flex items-center gap-1.5 text-zinc-400">
+                        <MessageCircle className="w-3.5 h-3.5 text-zinc-500" />
+                        {total.toLocaleString()} suara masuk
                     </span>
+                    
                     {userChoice && (
-                        <span className={`font-medium ${userChoice === 'a' ? 'text-neon-pink' : 'text-neon-cyan'}`}>
-                            You voted: {userChoice === 'a' ? poll.option_a : poll.option_b}
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                            userChoice === 'a' 
+                                ? 'bg-choice-left/10 text-choice-left border border-choice-left/15' 
+                                : 'bg-choice-right/10 text-choice-right border border-choice-right/15'
+                        }`}>
+                            Pilihan: {userChoice === 'a' ? poll.option_a : poll.option_b}
                         </span>
                     )}
                 </div>
+                
                 <button
                     onClick={handleShare}
-                    className="flex items-center gap-1 hover:text-white transition-colors"
+                    className="flex items-center gap-1.5 hover:text-zinc-300 transition-colors cursor-pointer select-none"
                 >
-                    <Share2 className="w-4 h-4" />
-                    Share
+                    <Share2 className="w-3.5 h-3.5" />
+                    Bagikan
                 </button>
             </div>
         </motion.div>

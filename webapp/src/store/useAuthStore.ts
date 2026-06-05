@@ -42,7 +42,9 @@ export const useAuthStore = create<AuthState>((set) => ({
                             id: data.id,
                             username: data.username || 'Anonymous',
                             daily_post_count: data.daily_post_count || 0,
-                            avatar_url: data.avatar_url || ''
+                            avatar_url: data.avatar_url || '',
+                            is_admin: data.is_admin || false,
+                            points: data.points ?? 50
                         }
                     });
                 }

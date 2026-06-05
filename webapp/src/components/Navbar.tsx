@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search, LogOut } from 'lucide-react';
+import { Menu, X, Search, LogOut, Shield } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { getUserTitle } from '@/components/LeaderboardClient';
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,57 +48,91 @@ export default function Navbar() {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        window.location.reload();
+        router.push('/auth/login');
+        router.refresh();
     };
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-neon-dark/80 backdrop-blur-xl border-b border-white/5">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-xl border-b border-brand-border/60">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <motion.span
-                            className="text-2xl md:text-3xl font-black italic tracking-tighter bg-gradient-to-r from-neon-pink via-white to-neon-cyan bg-clip-text text-transparent"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            KUBU
-                        </motion.span>
-                        <span className="hidden sm:block text-[10px] text-white/40 font-mono uppercase tracking-widest">
-                            Pick Your Side
-                        </span>
+                    <Link href="/" className="flex items-center gap-2.5 group select-none">
+                        <div className="relative w-8 h-8 flex items-center justify-center bg-white border border-brand-border/80 rounded-xl overflow-hidden shrink-0 transition-transform group-hover:scale-[1.03]">
+                            <Image
+                                src="/logo.png"
+                                alt="Kubu Logo"
+                                fill
+                                sizes="32px"
+                                className="object-contain p-1.5"
+                                priority
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-base font-black tracking-wider text-white leading-none">
+                                KUBU
+                            </span>
+                            <span className="text-[8px] text-zinc-500 font-bold tracking-widest uppercase mt-0.5">
+                                Suara Kamu, Pilihanmu
+                            </span>
+                        </div>
                     </Link>
 
                     {/* Desktop Search */}
                     <div className="hidden md:flex flex-1 max-w-md mx-8">
                         <div className="relative w-full">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                             <input
                                 type="text"
-                                placeholder="Search wars..."
+                                placeholder="Cari jajak pendapat..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/20 transition-all text-sm"
+                                className="w-full pl-10 pr-4 py-2 bg-brand-card/50 border border-brand-border rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700 focus:bg-brand-card focus:ring-1 focus:ring-white/10 transition-all text-xs font-medium"
                             />
                         </div>
                     </div>
 
                     {/* Desktop Actions */}
-                    <div className="hidden md:flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-3">
+                        <Link
+                            href="/leaderboard"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-brand-card/60 hover:bg-zinc-800/80 text-zinc-300 hover:text-white font-bold text-xs rounded-xl border border-brand-border/80 transition-all"
+                        >
+                            🏆 Peringkat
+                        </Link>
+
+                        {profile?.is_admin && (
+                            <Link
+                                href="/admin"
+                                className="flex items-center gap-1.5 px-3 py-2 bg-brand-card/60 hover:bg-zinc-800/80 text-zinc-300 hover:text-white font-bold text-xs rounded-xl border border-brand-border/80 transition-all"
+                            >
+                                <Shield className="w-3.5 h-3.5 text-brand-blue" />
+                                Admin
+                            </Link>
+                        )}
+                        
                         {user ? (
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
-                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-neon-pink to-neon-cyan flex items-center justify-center text-xs font-bold text-white">
-                                        {profile?.username?.[0]?.toUpperCase() || 'U'}
+                            <div className="flex items-center gap-2.5">
+                                <div className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/5 border border-amber-500/15 rounded-xl text-amber-500 font-black text-xs select-none">
+                                    🪙 {(profile?.points ?? 50).toLocaleString()}
+                                </div>
+                                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-brand-card/60 rounded-xl border border-brand-border/80">
+                                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-choice-left/90 to-choice-right/90 flex items-center justify-center text-[10px] font-black text-white uppercase select-none">
+                                        {profile?.username?.[0] || 'U'}
                                     </div>
-                                    <span className="text-sm text-white/80 font-medium">
-                                        {profile?.username || 'User'}
-                                    </span>
+                                    <div className="flex flex-col text-left">
+                                        <span className="text-[11px] text-white font-bold leading-none">
+                                            {profile?.username || 'User'}
+                                        </span>
+                                        <span className="text-[8px] text-zinc-500 font-bold mt-0.5 select-none uppercase tracking-wider">
+                                            {getUserTitle(profile?.points ?? 50).name}
+                                        </span>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={handleSignOut}
-                                    className="p-2 text-white/50 hover:text-neon-pink transition-colors"
-                                    title="Sign Out"
+                                    className="p-2 text-zinc-400 hover:text-choice-left transition-colors cursor-pointer"
+                                    title="Keluar"
                                 >
                                     <LogOut className="w-4 h-4" />
                                 </button>
@@ -104,9 +140,9 @@ export default function Navbar() {
                         ) : (
                             <Link
                                 href="/auth/login"
-                                className="px-4 py-2 bg-gradient-to-r from-neon-pink to-neon-cyan text-white font-bold text-sm rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-neon-pink/20"
+                                className="px-4 py-2 bg-white hover:bg-zinc-200 text-black font-black text-xs rounded-xl transition-all shadow-md active:scale-95 duration-150"
                             >
-                                Login
+                                Masuk
                             </Link>
                         )}
                     </div>
@@ -115,13 +151,13 @@ export default function Navbar() {
                     <div className="flex md:hidden items-center gap-2">
                         <button
                             onClick={() => setIsSearchOpen(!isSearchOpen)}
-                            className="p-2 text-white/70 hover:text-white transition-colors"
+                            className="p-2 text-zinc-300 hover:text-white transition-colors"
                         >
                             <Search className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="p-2 text-white/70 hover:text-white transition-colors"
+                            className="p-2 text-zinc-300 hover:text-white transition-colors"
                         >
                             {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </button>
@@ -138,13 +174,13 @@ export default function Navbar() {
                             className="md:hidden overflow-hidden pb-4"
                         >
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                                 <input
                                     type="text"
-                                    placeholder="Search wars..."
+                                    placeholder="Cari jajak pendapat..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-neon-cyan/50 text-sm"
+                                    className="w-full pl-10 pr-4 py-2 bg-brand-card border border-brand-border rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700 text-xs font-medium"
                                 />
                             </div>
                         </motion.div>
@@ -159,34 +195,62 @@ export default function Navbar() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="md:hidden bg-neon-dark/95 border-t border-white/5 overflow-hidden"
+                        className="md:hidden bg-background/95 backdrop-blur-xl border-t border-brand-border/60 overflow-hidden"
                     >
                         <div className="px-4 py-4 space-y-3">
+                            <Link
+                                href="/leaderboard"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex items-center gap-2.5 p-3 text-zinc-300 hover:text-white bg-brand-card/50 rounded-xl border border-brand-border/80"
+                            >
+                                <span>🏆</span>
+                                <span className="font-bold text-xs">Papan Peringkat</span>
+                            </Link>
+
+                            {profile?.is_admin && (
+                                <Link
+                                    href="/admin"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-2.5 p-3 text-zinc-300 hover:text-white bg-brand-card/50 rounded-xl border border-brand-border/80"
+                                >
+                                    <Shield className="w-4 h-4 text-brand-blue" />
+                                    <span className="font-bold text-xs">Admin Panel</span>
+                                </Link>
+                            )}
+
                             {user ? (
                                 <>
-                                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon-pink to-neon-cyan flex items-center justify-center text-lg font-bold text-white">
-                                            {profile?.username?.[0]?.toUpperCase() || 'U'}
+                                    <div className="flex items-center justify-between p-3 bg-brand-card/50 rounded-xl border border-brand-border/80">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-choice-left to-choice-right flex items-center justify-center text-sm font-black text-white uppercase select-none">
+                                                {profile?.username?.[0] || 'U'}
+                                            </div>
+                                            <div>
+                                                <p className="text-white text-xs font-bold leading-none">{profile?.username || 'User'}</p>
+                                                <p className="text-zinc-500 text-[8px] font-bold mt-1 select-none uppercase tracking-wider">
+                                                    {getUserTitle(profile?.points ?? 50).name}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-white font-medium">{profile?.username || 'User'}</p>
-                                            <p className="text-white/50 text-xs">Logged in</p>
+                                        <div className="px-2.5 py-1.5 bg-amber-500/5 border border-amber-500/15 rounded-xl text-amber-500 font-black text-xs select-none">
+                                            🪙 {(profile?.points ?? 50).toLocaleString()}
                                         </div>
                                     </div>
                                     <button
                                         onClick={handleSignOut}
-                                        className="w-full flex items-center gap-2 p-3 text-neon-pink hover:bg-white/5 rounded-xl transition-colors"
+                                        className="w-full flex items-center gap-2 p-3 text-choice-left hover:bg-brand-card/30 rounded-xl transition-colors font-bold text-xs"
                                     >
                                         <LogOut className="w-4 h-4" />
-                                        Sign Out
+                                        Keluar
                                     </button>
                                 </>
                             ) : (
                                 <Link
                                     href="/auth/login"
-                                    className="block w-full text-center px-4 py-3 bg-gradient-to-r from-neon-pink to-neon-cyan text-white font-bold rounded-xl"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block w-full text-center px-4 py-3 bg-white hover:bg-zinc-200 text-black font-black text-xs rounded-xl transition-colors"
                                 >
-                                    Login to Vote
+                                    Masuk ke KUBU
                                 </Link>
                             )}
                         </div>
