@@ -1,9 +1,11 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// TODO: Replace these with your actual Supabase URL and Anon Key
-// You can find these in your mobile app's config or Supabase dashboard
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    console.error('Supabase URL or Key is missing. Please check your .env file.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey);

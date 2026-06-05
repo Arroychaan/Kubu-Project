@@ -1,21 +1,59 @@
+/* Main App Container */
+.app-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1rem;
+  /* More padding top */
+  box-sizing: border-box;
+}
+
+/* Header Section */
+.header-section {
+  text-align: center;
+  margin-bottom: 3rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.title-large {
+  display: flex !important;
+  /* Override ensure */
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 3rem;
+  line-height: 1.2;
+  margin: 0 0 1rem 0;
+}
+
+.subtitle {
+  color: #94a3b8;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
 /* Glassmorphism Container */
 .glass-panel {
   background: rgba(30, 41, 59, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  border-radius: 20px;
+  /* Slightly more rounded */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  padding: 2.5rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   margin: 0 auto;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass-panel:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
 }
 
 /* Gradient Text */
@@ -36,54 +74,61 @@
 .label {
   display: block;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #94a3b8;
   margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
 }
 
 .input-field {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   color: #fff;
   font-size: 1rem;
   transition: all 0.2s ease;
   box-sizing: border-box;
+  /* Important for responsiveness */
 }
 
 .input-field:focus {
   outline: none;
   border-color: #3B82F6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
 }
 
 /* Button */
 .btn-primary {
   width: 100%;
-  padding: 0.875rem;
+  padding: 1rem;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
 .btn-primary:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* VS Indicator */
@@ -91,35 +136,73 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: #ef4444;
   color: white;
-  font-weight: bold;
+  font-weight: 800;
   border-radius: 50%;
-  border: 2px solid #1e293b;
-  margin: -10px auto;
+  border: 4px solid #1e293b;
+  /* Match bg color */
+  margin: -1.5rem auto;
+  /* Overlap */
   position: relative;
   z-index: 10;
   font-style: italic;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
   width: 100%;
-  margin-top: 3rem;
+  max-width: 1000px;
+  margin-top: 2rem;
 }
 
 .poll-card {
   background: rgba(30, 41, 59, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.5rem;
   transition: all 0.2s;
 }
 
 .poll-card:hover {
   border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(30, 41, 59, 0.6);
+  transform: translateY(-2px);
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 640px) {
+  .app-container {
+    padding: 2rem 1rem;
+  }
+
+  .title-large {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .title-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .glass-panel {
+    padding: 1.5rem 1rem;
+    /* Reduce horizontal padding significantly on mobile */
+    width: 100%;
+    border-radius: 16px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    /* Stack cards on mobile */
+    padding: 0 0.5rem;
+  }
 }
