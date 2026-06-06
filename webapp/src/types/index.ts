@@ -87,6 +87,38 @@ export interface Database {
                     choice?: 'a' | 'b' | null
                 }
             }
+            comments: {
+                Row: {
+                    id: string
+                    poll_id: string
+                    user_id: string
+                    choice: 'a' | 'b'
+                    text: string
+                    is_toxic: boolean
+                    toxicity_score: number | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    poll_id: string
+                    user_id: string
+                    choice: 'a' | 'b'
+                    text: string
+                    is_toxic?: boolean
+                    toxicity_score?: number | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    poll_id?: string
+                    user_id?: string
+                    choice?: 'a' | 'b'
+                    text?: string
+                    is_toxic?: boolean
+                    toxicity_score?: number | null
+                    created_at?: string
+                }
+            }
             audit_logs: {
                 Row: {
                     id: string

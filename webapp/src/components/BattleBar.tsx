@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { twMerge } from "tailwind-merge";
 import { MouseEvent } from "react";
 
-interface BattleBarProps {
+interface KubuBarProps {
     countA: number;
     countB: number;
     colorA?: string; // Tailwind bg class
@@ -16,7 +16,7 @@ interface BattleBarProps {
     className?: string;
 }
 
-export default function BattleBar({
+export default function KubuBar({
     countA,
     countB,
     colorA = 'bg-choice-left',
@@ -26,7 +26,7 @@ export default function BattleBar({
     labelA = 'A',
     labelB = 'B',
     className
-}: BattleBarProps) {
+}: KubuBarProps) {
     // Calculate percentages
     const total = countA + countB;
     const percentA = total === 0 ? 50 : (countA / total) * 100;
@@ -103,9 +103,9 @@ export default function BattleBar({
                     animate={{ width: `${displayPercentA}%` }}
                     transition={{
                         type: "spring",
-                        stiffness: 60,
-                        damping: 14,
-                        mass: 0.9
+                        stiffness: 70,
+                        damping: 20,
+                        mass: 1
                     }}
                     style={{
                         // Diagonal cut using clip-path
@@ -167,7 +167,7 @@ export default function BattleBar({
                     className="absolute top-0 bottom-0 w-[1.5px] bg-white/40 shadow-[0_0_8px_rgba(255,255,255,0.6)] pointer-events-none z-15"
                     initial={{ left: "calc(50% - 10px)" }}
                     animate={{ left: `calc(${displayPercentA}% - 10px)` }}
-                    transition={{ type: "spring", stiffness: 60, damping: 14 }}
+                    transition={{ type: "spring", stiffness: 70, damping: 20 }}
                     style={{
                         transform: `skewX(-${SKEW_DEG}deg)`,
                     }}

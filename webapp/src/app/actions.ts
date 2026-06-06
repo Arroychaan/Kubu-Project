@@ -581,3 +581,310 @@ export async function getLeaderboard(limit = 20): Promise<ActionResponse> {
         };
     }
 }
+
+// ============================================
+// SERVER ACTION: GET COMMENTS (OPINION SEGMENTS)
+// ============================================
+export async function getComments(pollId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        const { data, error } = await supabase
+            .from('comments')
+            .select(`
+                id,
+                text,
+                choice,
+                is_toxic,
+                created_at,
+                user_id,
+                parent_id,
+                profiles (
+                    username,
+                    avatar_url,
+                    points
+                )
+            `)
+            .eq('poll_id', pollId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Fetch comments error:', error);
+            return {
+                success: false,
+                message: 'Gagal memuat daftar opini.'
+            };
+        }
+
+        const comments = data || [];
+        const commentsA = comments.filter((c: any) => c.choice === 'a');
+        const commentsB = comments.filter((c: any) => c.choice === 'b');
+
+        return {
+            success: true,
+            message: 'Opini berhasil dimuat.',
+            data: { commentsA, commentsB }
+        };
+    } catch (error) {
+        console.error('Unexpected getComments error:', error);
+        return {
+            success: false,
+            message: 'Terjadi kesalahan sistem.'
+        };
+    }
+}
+
+// ============================================
+// SERVER ACTION: ADD COMMENT (OPINION)
+// ============================================
+export async function addComment(pollId: string, text: string, parentId?: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        // 1. Cek Autentikasi
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return {
+                success: false,
+                message: 'Anda harus masuk terlebih dahulu untuk mengirim opini.'
+            };
+        }
+
+        // 2. Validasi input teks
+        const trimmedText = text.trim();
+        if (!trimmedText) {
+            return {
+                success: false,
+                message: 'Opini tidak boleh kosong.'
+            };
+        }
+
+        if (trimmedText.length > 500) {
+            return {
+                success: false,
+                message: 'Opini terlalu panjang (maksimal 500 karakter).'
+            };
+        }
+
+        // 3. Cek apakah pengguna sudah memilih di polling ini
+        const { data: voteData, error: voteError } = await supabase
+            .from('votes')
+            .select('choice')
+            .eq('poll_id', pollId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (voteError || !voteData) {
+            return {
+                success: false,
+                message: 'Anda harus memberikan pilihan kubu terlebih dahulu sebelum menulis alasan.'
+            };
+        }
+
+        // 4. Panggil Deno Edge Function clown-filter untuk moderasi dan penyimpanan
+        const { data: filterResult, error: invokeError } = await supabase.functions.invoke('clown-filter', {
+            body: {
+                text: trimmedText,
+                poll_id: pollId,
+                choice: voteData.choice,
+                save_to_db: true,
+                parent_id: parentId
+            }
+        });
+
+        if (invokeError || !filterResult || !filterResult.success) {
+            console.error('Clown filter invocation failed:', invokeError, filterResult);
+            return {
+                success: false,
+                message: 'Gagal mempublikasikan opini. Sistem moderasi sedang sibuk, silakan coba beberapa saat lagi.'
+            };
+        }
+
+        // 5. Berikan bonus koin untuk penulisan alasan (+15 poin reputasi opini)
+        await supabase.rpc('increment_user_points', { p_user_id: user.id, p_amount: 15 });
+
+        return {
+            success: true,
+            message: filterResult.is_toxic 
+                ? 'Opini diterbitkan, namun dibersihkan (mengandung konten tidak pantas).' 
+                : 'Opini Anda berhasil diterbitkan!',
+            data: filterResult
+        };
+
+    } catch (error: any) {
+        console.error('Unexpected addComment error:', error);
+        // Cek constraint unik di database
+        if (error?.message?.includes('comments_poll_user_unique') || (error?.code === '23505')) {
+            return {
+                success: false,
+                message: 'Anda hanya dapat mengirim satu alasan utama per jajak pendapat.'
+            };
+        }
+        return {
+            success: false,
+            message: 'Terjadi kesalahan sistem.'
+        };
+    }
+}
+
+// ============================================
+// SERVER ACTION: GET NOTIFICATIONS
+// ============================================
+export async function getNotifications(): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: false, message: 'Silakan masuk terlebih dahulu.' };
+        }
+
+        const { data, error } = await supabase
+            .from('notifications')
+            .select(`
+                id,
+                type,
+                poll_id,
+                actor_id,
+                message,
+                is_read,
+                read_at,
+                created_at,
+                actor:profiles!actor_id(username, avatar_url),
+                poll:polls(question)
+            `)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) {
+            console.error('Fetch notifications error:', error);
+            return { success: false, message: 'Gagal memuat notifikasi.' };
+        }
+
+        return {
+            success: true,
+            message: 'Notifikasi berhasil dimuat.',
+            data: data || []
+        };
+    } catch (error) {
+        console.error('Unexpected getNotifications error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+// ============================================
+// SERVER ACTION: MARK NOTIFICATION AS READ
+// ============================================
+export async function markNotificationAsRead(id: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: false, message: 'Silakan masuk terlebih dahulu.' };
+        }
+
+        const { error } = await supabase
+            .from('notifications')
+            .update({
+                is_read: true,
+                read_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Mark notification read error:', error);
+            return { success: false, message: 'Gagal menandai notifikasi.' };
+        }
+
+        return { success: true, message: 'Notifikasi ditandai telah dibaca.' };
+    } catch (error) {
+        console.error('Unexpected markNotificationAsRead error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+// ============================================
+// SERVER ACTION: MARK ALL NOTIFICATIONS AS READ
+// ============================================
+export async function markAllNotificationsAsRead(): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: false, message: 'Silakan masuk terlebih dahulu.' };
+        }
+
+        const { error } = await supabase
+            .from('notifications')
+            .update({
+                is_read: true,
+                read_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id)
+            .eq('is_read', false);
+
+        if (error) {
+            console.error('Mark all notifications read error:', error);
+            return { success: false, message: 'Gagal menandai semua notifikasi.' };
+        }
+
+        return { success: true, message: 'Semua notifikasi ditandai telah dibaca.' };
+    } catch (error) {
+        console.error('Unexpected markAllNotificationsAsRead error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+// ============================================
+// SERVER ACTION: REPORT CONTENT
+// ============================================
+export async function reportContent(
+    targetType: 'poll' | 'comment',
+    targetId: string,
+    reason: 'spam' | 'ujaran_kebencian' | 'pelecehan' | 'informasi_menyesatkan' | 'konten_tidak_pantas' | 'lainnya',
+    details: string
+): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: false, message: 'Silakan masuk terlebih dahulu untuk membuat laporan.' };
+        }
+
+        if (!targetId || !targetType || !reason) {
+            return { success: false, message: 'Data laporan tidak lengkap.' };
+        }
+
+        const validReasons = ['spam', 'ujaran_kebencian', 'pelecehan', 'informasi_menyesatkan', 'konten_tidak_pantas', 'lainnya'];
+        if (!validReasons.includes(reason)) {
+            return { success: false, message: 'Kategori laporan tidak valid.' };
+        }
+
+        const { error } = await supabase
+            .from('reports')
+            .insert({
+                reporter_id: user.id,
+                target_type: targetType,
+                target_id: targetId,
+                reason: reason,
+                details: details.trim() || null
+            });
+
+        if (error) {
+            console.error('Error inserting report:', error);
+            return { success: false, message: 'Gagal mengirim laporan. Silakan coba lagi.' };
+        }
+
+        return { success: true, message: 'Laporan berhasil dikirim!' };
+    } catch (error) {
+        console.error('Unexpected reportContent error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+

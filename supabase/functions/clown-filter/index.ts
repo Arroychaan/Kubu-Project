@@ -11,14 +11,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
 const HUGGINGFACE_API_URL =
-    "https://api-inference.huggingface.co/models/Hate-speech-CNERG/dehatebert-mono-indonesian"
+    "https://router.huggingface.co/hf-inference/models/unitary/toxic-bert"
 
 // Toxicity threshold (0.0 - 1.0)
 const TOXICITY_THRESHOLD = 0.7
 
-// Fallback model if primary is unavailable
+// Fallback model if primary is unavailable (distilbert sentiment)
 const FALLBACK_MODEL_URL =
-    "https://api-inference.huggingface.co/models/unitary/toxic-bert"
+    "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english"
 
 // Types
 interface HFClassification {
@@ -28,8 +28,10 @@ interface HFClassification {
 
 interface FilterRequest {
     text: string
-    battle_id?: string
+    poll_id?: string
+    choice?: 'a' | 'b'
     save_to_db?: boolean
+    parent_id?: string
 }
 
 interface FilterResponse {
@@ -51,6 +53,8 @@ function isToxicLabel(label: string): boolean {
         "offensive",
         "hateful",
         "abusive",
+        "insult",
+        "obscene",
     ]
     return toxicLabels.some((t) => label.toLowerCase().includes(t))
 }
@@ -135,7 +139,7 @@ Deno.serve(async (req: Request) => {
 
         // Parse request body
         const body: FilterRequest = await req.json()
-        const { text, battle_id, save_to_db = false } = body
+        const { text, poll_id, choice, save_to_db = false, parent_id } = body
 
         // Validate input
         if (!text || typeof text !== 'string') {
@@ -160,15 +164,15 @@ Deno.serve(async (req: Request) => {
             )
         }
 
-        // Query primary model (IndoBERT for Indonesian hate speech)
+        // Query primary model (toxic-bert)
         let result = await queryHuggingFace(
             trimmedText,
             HUGGINGFACE_API_KEY,
             HUGGINGFACE_API_URL
         )
-        let modelUsed = 'dehatebert-mono-indonesian'
+        let modelUsed = 'toxic-bert'
 
-        // Fallback to toxic-bert if primary fails
+        // Fallback to distilbert-sst2 if primary fails
         if (result === null) {
             console.log('Primary model unavailable, trying fallback...')
             result = await queryHuggingFace(
@@ -176,7 +180,7 @@ Deno.serve(async (req: Request) => {
                 HUGGINGFACE_API_KEY,
                 FALLBACK_MODEL_URL
             )
-            modelUsed = 'toxic-bert (fallback)'
+            modelUsed = 'distilbert-sst2 (fallback)'
         }
 
         // If both models fail, pass through with warning
@@ -217,7 +221,7 @@ Deno.serve(async (req: Request) => {
         }
 
         // Optionally save to database
-        if (save_to_db && battle_id && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        if (save_to_db && poll_id && choice && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
             try {
                 // Get user from auth header
                 const authHeader = req.headers.get('Authorization')
@@ -234,11 +238,12 @@ Deno.serve(async (req: Request) => {
                             .from('comments')
                             .insert({
                                 user_id: user.id,
-                                battle_id: battle_id,
-                                original_text: trimmedText,
-                                displayed_text: displayedText,
+                                poll_id: poll_id,
+                                choice: choice,
+                                text: displayedText,
                                 is_toxic: isToxic,
                                 toxicity_score: toxicityScore,
+                                parent_id: parent_id || null,
                             })
                             .select('id')
                             .single()

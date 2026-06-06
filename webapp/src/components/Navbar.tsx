@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search, LogOut, Shield } from 'lucide-react';
+import { Menu, X, Search, LogOut, Shield, Bell } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserTitle } from '@/components/LeaderboardClient';
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/app/actions';
 
 export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,6 +47,145 @@ export default function Navbar() {
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery, router, searchParams]);
 
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+    const fetchNotifications = async () => {
+        const { success, data } = await getNotifications();
+        if (success && data) {
+            setNotifications(data as any[]);
+            setUnreadCount((data as any[]).filter((n: any) => !n.is_read).length);
+        }
+    };
+
+    useEffect(() => {
+        if (!user) {
+            setNotifications([]);
+            setUnreadCount(0);
+            return;
+        }
+
+        fetchNotifications();
+
+        // Subscribe to real-time notification inserts for the logged-in user
+        const channel = supabase
+            .channel(`realtime-notifications-${user.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notifications',
+                    filter: `user_id=eq.${user.id}`
+                },
+                () => {
+                    // Re-fetch notifications to get fully populated relation data
+                    fetchNotifications();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user]);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        if (!isNotificationsOpen) return;
+        const handleOutsideClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest('.bell-notifications-container')) {
+                setIsNotificationsOpen(false);
+            }
+        };
+        document.addEventListener('click', handleOutsideClick);
+        return () => document.removeEventListener('click', handleOutsideClick);
+    }, [isNotificationsOpen]);
+
+    // Handle marking a notification as read and navigating to the poll
+    const handleNotifClick = async (notif: any) => {
+        if (!notif.is_read) {
+            // Update UI optimistically
+            setNotifications(prev =>
+                prev.map(n => n.id === notif.id ? { ...n, is_read: true } : n)
+            );
+            setUnreadCount(c => Math.max(0, c - 1));
+            
+            // Call server action
+            await markNotificationAsRead(notif.id);
+        }
+        
+        setIsNotificationsOpen(false);
+        
+        if (notif.poll_id) {
+            // Scroll to the poll card on the homepage
+            router.push(`/#poll-${notif.poll_id}`);
+            
+            // If we are already on the homepage, the hash route may not trigger scroll automatically.
+            // Scroll to the element manually if it exists.
+            setTimeout(() => {
+                const element = document.getElementById(`poll-${notif.poll_id}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Briefly highlight the target card
+                    element.classList.add('border-brand-blue');
+                    setTimeout(() => {
+                        element.classList.remove('border-brand-blue');
+                    }, 2000);
+                }
+            }, 250);
+        }
+    };
+
+    // Handle marking all notifications as read
+    const handleMarkAllRead = async () => {
+        // Update UI optimistically
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        setUnreadCount(0);
+        
+        // Call server action
+        await markAllNotificationsAsRead();
+    };
+
+    // Helper: Format message text to bold actor name and poll title
+    const formatNotifMessage = (msg: string) => {
+        const parts = msg.split('"');
+        if (parts.length >= 3) {
+            const firstWordEnd = parts[0].indexOf(' ');
+            if (firstWordEnd > 0) {
+                const actorName = parts[0].substring(0, firstWordEnd);
+                const actionText = parts[0].substring(firstWordEnd);
+                return (
+                    <>
+                        <strong className="text-white font-extrabold">{actorName}</strong>
+                        {actionText}
+                        <strong className="text-white font-extrabold">"{parts[1]}"</strong>
+                        {parts[2]}
+                    </>
+                );
+            }
+        }
+        return msg;
+    };
+
+    // Helper: Format relative timestamp
+    const formatTime = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffMins < 1) return 'Baru saja';
+        if (diffMins < 60) return `${diffMins}m yang lalu`;
+        if (diffHours < 24) return `${diffHours}j yang lalu`;
+        if (diffDays < 7) return `${diffDays}h yang lalu`;
+        return date.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+    };
+
     const handleSignOut = async () => {
         await supabase.auth.signOut();
         router.push('/auth/login');
@@ -73,7 +213,7 @@ export default function Navbar() {
                                 KUBU
                             </span>
                             <span className="text-[8px] text-zinc-500 font-bold tracking-widest uppercase mt-0.5">
-                                Suara Kamu, Pilihanmu
+                                Ruang Publik Polling &amp; Opini
                             </span>
                         </div>
                     </Link>
@@ -116,6 +256,82 @@ export default function Navbar() {
                                 <div className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/5 border border-amber-500/15 rounded-xl text-amber-500 font-black text-xs select-none">
                                     🪙 {(profile?.points ?? 50).toLocaleString()}
                                 </div>
+
+                                {/* Desktop Notification Bell */}
+                                <div className="relative bell-notifications-container">
+                                    <button
+                                        onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                        className={`relative p-2 bg-brand-card/60 hover:bg-zinc-800/80 text-zinc-300 hover:text-white rounded-xl border border-brand-border/80 transition-all cursor-pointer ${
+                                            isNotificationsOpen ? 'bg-zinc-850 text-white' : ''
+                                        }`}
+                                        title="Notifikasi"
+                                    >
+                                        <Bell className="w-4 h-4" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute top-1 right-1 w-2 h-2 bg-brand-blue rounded-full ring-2 ring-background animate-pulse" />
+                                        )}
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isNotificationsOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute right-0 mt-2.5 w-80 bg-zinc-950/95 backdrop-blur-2xl border border-brand-border rounded-2xl shadow-2xl overflow-hidden z-50 text-left"
+                                            >
+                                                {/* Header */}
+                                                <div className="flex items-center justify-between px-4 py-3 border-b border-brand-border/60 bg-brand-card/30">
+                                                    <span className="text-xs text-white font-black">Notifikasi</span>
+                                                    {unreadCount > 0 && (
+                                                        <button
+                                                            onClick={handleMarkAllRead}
+                                                            className="text-[10px] text-brand-blue hover:text-blue-400 font-bold transition-colors cursor-pointer"
+                                                        >
+                                                            Tandai semua dibaca
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* List */}
+                                                <div className="max-h-[300px] overflow-y-auto divide-y divide-brand-border/40">
+                                                    {notifications.length > 0 ? (
+                                                        notifications.map((n) => (
+                                                            <div
+                                                                key={n.id}
+                                                                onClick={() => handleNotifClick(n)}
+                                                                className={`p-3.5 hover:bg-zinc-900/60 cursor-pointer transition-all flex items-start gap-3 relative ${
+                                                                    !n.is_read ? 'bg-brand-blue/5' : ''
+                                                                }`}
+                                                            >
+                                                                {!n.is_read && (
+                                                                    <span className="absolute left-2.5 top-5 w-1.5 h-1.5 bg-brand-blue rounded-full" />
+                                                                )}
+                                                                <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-brand-border flex items-center justify-center text-[10px] font-black text-white uppercase select-none shrink-0 mt-0.5">
+                                                                    {n.actor?.username?.[0] || 'U'}
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-[11px] text-zinc-300 leading-normal break-words font-medium">
+                                                                        {formatNotifMessage(n.message)}
+                                                                    </p>
+                                                                    <span className="text-[8px] text-zinc-600 font-bold block mt-1">
+                                                                        {formatTime(n.created_at)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="p-8 text-center text-zinc-500 flex flex-col items-center justify-center gap-2 select-none">
+                                                            <Bell className="w-8 h-8 text-zinc-700 stroke-[1.5]" />
+                                                            <span className="text-[10px] font-bold">Belum ada notifikasi baru</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
                                 <div className="flex items-center gap-2 px-2.5 py-1.5 bg-brand-card/60 rounded-xl border border-brand-border/80">
                                     <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-choice-left/90 to-choice-right/90 flex items-center justify-center text-[10px] font-black text-white uppercase select-none">
                                         {profile?.username?.[0] || 'U'}
@@ -149,6 +365,79 @@ export default function Navbar() {
 
                     {/* Mobile Menu Button */}
                     <div className="flex md:hidden items-center gap-2">
+                        {user && (
+                            /* Mobile Notification Bell */
+                            <div className="relative bell-notifications-container">
+                                <button
+                                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                    className="p-2 text-zinc-300 hover:text-white transition-colors relative cursor-pointer"
+                                >
+                                    <Bell className="w-5 h-5" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-1 right-1 w-2 h-2 bg-brand-blue rounded-full ring-2 ring-background animate-pulse" />
+                                    )}
+                                </button>
+                                
+                                <AnimatePresence>
+                                    {isNotificationsOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute right-0 mt-2.5 w-72 bg-zinc-950/95 backdrop-blur-2xl border border-brand-border rounded-2xl shadow-2xl overflow-hidden z-50 text-left"
+                                        >
+                                            {/* Header */}
+                                            <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-brand-border/60 bg-brand-card/30">
+                                                <span className="text-xs text-white font-black">Notifikasi</span>
+                                                {unreadCount > 0 && (
+                                                    <button
+                                                        onClick={handleMarkAllRead}
+                                                        className="text-[9px] text-brand-blue hover:text-blue-400 font-bold transition-colors cursor-pointer"
+                                                    >
+                                                        Tandai semua dibaca
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* List */}
+                                            <div className="max-h-[250px] overflow-y-auto divide-y divide-brand-border/40">
+                                                {notifications.length > 0 ? (
+                                                    notifications.map((n) => (
+                                                        <div
+                                                            key={n.id}
+                                                            onClick={() => handleNotifClick(n)}
+                                                            className={`p-3 hover:bg-zinc-900/60 cursor-pointer transition-all flex items-start gap-2.5 relative ${
+                                                                !n.is_read ? 'bg-brand-blue/5' : ''
+                                                            }`}
+                                                        >
+                                                            {!n.is_read && (
+                                                                <span className="absolute left-2 top-4 w-1.5 h-1.5 bg-brand-blue rounded-full" />
+                                                            )}
+                                                            <div className="w-6 h-6 rounded-lg bg-zinc-900 border border-brand-border flex items-center justify-center text-[9px] font-black text-white uppercase select-none shrink-0 mt-0.5">
+                                                                {n.actor?.username?.[0] || 'U'}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-[10px] text-zinc-300 leading-normal break-words font-medium">
+                                                                    {formatNotifMessage(n.message)}
+                                                                </p>
+                                                                <span className="text-[8px] text-zinc-600 font-bold block mt-0.5">
+                                                                    {formatTime(n.created_at)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-6 text-center text-zinc-500 flex flex-col items-center justify-center gap-2 select-none">
+                                                        <Bell className="w-6 h-6 text-zinc-700 stroke-[1.5]" />
+                                                        <span className="text-[9px] font-bold">Belum ada notifikasi baru</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        )}
                         <button
                             onClick={() => setIsSearchOpen(!isSearchOpen)}
                             className="p-2 text-zinc-300 hover:text-white transition-colors"

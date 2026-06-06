@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import PollCard from './PollCard';
 import CreatePollModal from './CreatePollModal';
 import { Poll } from '@/types';
-import { Swords, Users, Flame, Zap } from 'lucide-react';
+import { MessageSquare, Users, Flame, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
@@ -72,7 +72,7 @@ export default function HomeClient({ officialPoll, communityPolls }: HomeClientP
                         <div className="flex flex-wrap gap-4 pt-2">
                             <button
                                 onClick={() => {
-                                    const element = document.getElementById('battlefield');
+                                    const element = document.getElementById('opinion-feed');
                                     element?.scrollIntoView({ behavior: 'smooth' });
                                 }}
                                 className="px-6 py-3.5 bg-white hover:bg-zinc-200 text-black font-black rounded-xl transition-all shadow-md active:scale-95 duration-150 text-xs tracking-wider uppercase cursor-pointer"
@@ -94,7 +94,7 @@ export default function HomeClient({ officialPoll, communityPolls }: HomeClientP
                     {/* Right side visual: Interactive Stats & Mini Clash */}
                     <div className="lg:col-span-5 hidden lg:block bg-black/40 border border-brand-border/80 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl">
                         <div className="flex justify-between items-center mb-6 border-b border-brand-border/60 pb-3">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Status Arena</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Aktivitas Opini</span>
                             <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/5 text-emerald-400 text-[8px] font-bold rounded-full uppercase tracking-wider border border-emerald-500/15">
                                 <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
                                 Real-Time
@@ -118,7 +118,7 @@ export default function HomeClient({ officialPoll, communityPolls }: HomeClientP
                             {/* Dashboard grid */}
                             <div className="grid grid-cols-3 gap-3 pt-3 border-t border-brand-border/60 text-center">
                                 <div className="bg-zinc-900/30 border border-brand-border/60 rounded-xl p-2.5">
-                                    <Swords className="w-4 h-4 text-choice-left mx-auto mb-1" />
+                                    <MessageSquare className="w-4 h-4 text-choice-left mx-auto mb-1" />
                                     <div className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider">Polling</div>
                                     <div className="text-xs font-black text-white mt-0.5">142+</div>
                                 </div>
@@ -139,7 +139,7 @@ export default function HomeClient({ officialPoll, communityPolls }: HomeClientP
             </section>
 
             {/* Tab Filter Navigation */}
-            <div id="battlefield" className="flex items-center justify-between border-b border-brand-border/60 pb-3 mb-8 scroll-mt-24">
+            <div id="opinion-feed" className="flex items-center justify-between border-b border-brand-border/60 pb-3 mb-8 scroll-mt-24">
                 <div className="flex gap-6 relative">
                     {(['all', 'official', 'community'] as const).map((tab) => {
                         const label = tab === 'all' ? 'Semua' : tab === 'official' ? 'Resmi' : 'Komunitas';

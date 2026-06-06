@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toggleOfficialPoll, updateDailyPollLimit } from '@/app/actions';
-import { Shield, Settings, Database, Swords, Users, BarChart3, Clock, AlertCircle } from 'lucide-react';
+import { Shield, Settings, Database, Users, BarChart3, Clock, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface PollItem {
@@ -109,7 +109,7 @@ export default function AdminClient({ initialPolls, initialLimit, initialLogs }:
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-brand-card border border-brand-border rounded-2xl p-6 flex items-center gap-4 shadow-lg">
                     <div className="w-10 h-10 rounded-lg bg-choice-left/15 flex items-center justify-center shrink-0">
-                        <Swords className="w-5 h-5 text-choice-left" />
+                        <BarChart3 className="w-5 h-5 text-choice-left" />
                     </div>
                     <div>
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Polling</span>
@@ -221,7 +221,7 @@ export default function AdminClient({ initialPolls, initialLimit, initialLogs }:
             {/* Poll Table Management */}
             <div className="bg-brand-card border border-brand-border rounded-2xl p-6 shadow-lg">
                 <h2 className="text-base font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-                    <Swords className="w-4 h-4 text-choice-left" />
+                    <BarChart3 className="w-4 h-4 text-choice-left" />
                     Manajemen Jajak Pendapat
                 </h2>
                 <div className="overflow-x-auto">

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Trophy, Medal, Crown, ArrowLeft, Swords } from 'lucide-react';
+import { Trophy, Medal, Crown, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface LeaderboardUser {
@@ -17,10 +17,10 @@ interface LeaderboardClientProps {
 }
 
 export function getUserTitle(points: number) {
-    if (points >= 1000) return { name: 'Battle Master', icon: '👑', color: 'text-amber-500 border-amber-500/10 bg-amber-500/5' };
-    if (points >= 300) return { name: 'Elite Warrior', icon: '🔥', color: 'text-rose-500 border-rose-500/10 bg-rose-500/5' };
-    if (points >= 100) return { name: 'Pro Voter', icon: '⚡', color: 'text-blue-500 border-blue-500/10 bg-blue-500/5' };
-    return { name: 'Rookie', icon: '🔰', color: 'text-zinc-400 border-zinc-500/10 bg-zinc-500/5' };
+    if (points >= 1000) return { name: 'Tokoh Kubu', icon: '👑', color: 'text-amber-500 border-amber-500/10 bg-amber-500/5' };
+    if (points >= 300) return { name: 'Pengamat Aktif', icon: '🔥', color: 'text-rose-500 border-rose-500/10 bg-rose-500/5' };
+    if (points >= 100) return { name: 'Partisipan Pro', icon: '⚡', color: 'text-blue-500 border-blue-500/10 bg-blue-500/5' };
+    return { name: 'Kubu Rookie', icon: '🔰', color: 'text-zinc-400 border-zinc-500/10 bg-zinc-500/5' };
 }
 
 export default function LeaderboardClient({ users }: LeaderboardClientProps) {
@@ -78,7 +78,7 @@ export default function LeaderboardClient({ users }: LeaderboardClientProps) {
                         Papan Peringkat
                     </h1>
                     <p className="text-zinc-400 text-xs sm:text-sm mt-1 font-semibold leading-normal">
-                        Daftar ksatria opini teraktif dengan poin terbanyak di platform KUBU.
+                        Lihat pengguna dengan reputasi opini tertinggi di KUBU.
                     </p>
                 </div>
             </div>
@@ -199,7 +199,7 @@ export default function LeaderboardClient({ users }: LeaderboardClientProps) {
                     ) : (
                         users.length <= 3 && (
                             <div className="px-6 py-12 text-center text-zinc-500 font-bold select-none text-xs">
-                                Belum ada ksatria opini lain di arena ini.
+                                Belum ada pengguna opini lain di peringkat ini.
                             </div>
                         )
                     )}
