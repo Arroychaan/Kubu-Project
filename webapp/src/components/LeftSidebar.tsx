@@ -1,5 +1,5 @@
 'use client';
-
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -25,6 +25,20 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
         router.refresh();
     };
 
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        if (user) {
+            import('@/app/actions').then(({ getUnreadNotificationCount }) => {
+                getUnreadNotificationCount().then(res => {
+                    if (res.success && typeof res.data === 'number') {
+                        setUnreadCount(res.data);
+                    }
+                });
+            });
+        }
+    }, [user, pathname]);
+
     const navItems = [
         {
             name: 'Beranda',
@@ -48,7 +62,8 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
             name: 'Notifikasi',
             href: '/notifications',
             icon: Bell,
-            active: pathname.startsWith('/notifications')
+            active: pathname.startsWith('/notifications'),
+            badge: unreadCount > 0 ? unreadCount : null
         },
         {
             name: 'Peringkat',
@@ -98,7 +113,14 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                                 }`}
                                 title={item.name}
                             >
-                                <Icon className={`w-7 h-7 ${item.active ? 'text-white' : 'text-zinc-300 group-hover:text-white'}`} strokeWidth={item.active ? 2.5 : 2} />
+                                <div className="relative">
+                                    <Icon className={`w-7 h-7 ${item.active ? 'text-white' : 'text-zinc-300 group-hover:text-white'}`} strokeWidth={item.active ? 2.5 : 2} />
+                                    {item.badge && (
+                                        <div className="absolute -top-1 -right-1 bg-brand-blue text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-background">
+                                            {item.badge > 9 ? '9+' : item.badge}
+                                        </div>
+                                    )}
+                                </div>
                                 <span className="hidden xl:inline text-xl pr-4">{item.name}</span>
                             </Link>
                         );

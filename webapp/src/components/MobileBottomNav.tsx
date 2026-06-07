@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Trophy, User } from 'lucide-react';
+import { Home, Compass, Plus, Trophy, User, Bell } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 
 interface MobileBottomNavProps {
@@ -13,6 +14,20 @@ export default function MobileBottomNav({ activeTab }: MobileBottomNavProps) {
     const { user } = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
+
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        if (user) {
+            import('@/app/actions').then(({ getUnreadNotificationCount }) => {
+                getUnreadNotificationCount().then(res => {
+                    if (res.success && typeof res.data === 'number') {
+                        setUnreadCount(res.data);
+                    }
+                });
+            });
+        }
+    }, [user, pathname]);
 
     const handleCreateClick = () => {
         if (!user) {
@@ -30,10 +45,10 @@ export default function MobileBottomNav({ activeTab }: MobileBottomNavProps) {
             active: pathname === '/'
         },
         {
-            name: 'Cari',
-            icon: Search,
-            href: '/search',
-            active: pathname === '/search'
+            name: 'Jelajah',
+            icon: Compass,
+            href: '/explore',
+            active: pathname.startsWith('/explore')
         },
         {
             name: 'Buat',
@@ -43,10 +58,11 @@ export default function MobileBottomNav({ activeTab }: MobileBottomNavProps) {
             isCenter: true
         },
         {
-            name: 'Peringkat',
-            icon: Trophy,
-            href: '/leaderboard',
-            active: pathname === '/leaderboard'
+            name: 'Notifikasi',
+            icon: Bell,
+            href: '/notifications',
+            active: pathname.startsWith('/notifications'),
+            badge: unreadCount > 0 ? unreadCount : null
         },
         {
             name: 'Profil',
@@ -82,7 +98,14 @@ export default function MobileBottomNav({ activeTab }: MobileBottomNavProps) {
                             item.active ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
                         }`}
                     >
-                        <Icon className="w-6 h-6" strokeWidth={item.active ? 2.5 : 2} />
+                        <div className="relative">
+                            <Icon className="w-6 h-6" strokeWidth={item.active ? 2.5 : 2} />
+                            {item.badge && (
+                                <div className="absolute -top-1 -right-1 bg-brand-blue text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border-2 border-background">
+                                    {item.badge > 9 ? '9+' : item.badge}
+                                </div>
+                            )}
+                        </div>
                     </Link>
                 );
             })}

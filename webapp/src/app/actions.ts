@@ -1153,6 +1153,39 @@ export async function searchProfiles(searchQuery: string, limit = 20): Promise<A
     }
 }
 
+// ============================================
+// SERVER ACTION: GET UNREAD NOTIFICATION COUNT
+// ============================================
+export async function getUnreadNotificationCount(): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: true, message: 'Not authenticated', data: 0 };
+        }
+
+        const { count, error } = await supabase
+            .from('notifications')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('is_read', false);
+
+        if (error) {
+            console.error('Fetch unread notifications count error:', error);
+            return { success: false, message: 'Gagal memuat jumlah notifikasi.' };
+        }
+
+        return {
+            success: true,
+            message: 'Jumlah notifikasi berhasil dimuat.',
+            data: count || 0
+        };
+    } catch (error) {
+        console.error('Unexpected getUnreadNotificationCount error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
 
 
 
