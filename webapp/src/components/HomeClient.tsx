@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import PollCard from './PollCard';
 import { Poll } from '@/types';
-import { Flame, Zap } from 'lucide-react';
+import { Flame, Zap, Image as ImageIcon, BarChart2, Smile, Calendar, MapPin } from 'lucide-react';
 import { useState, useEffect, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -113,24 +113,58 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
             </div>
 
 
-            {/* Short & Sharp Hero Section (Shown below tabs) */}
-            <section className="px-4 py-4 md:px-6 md:py-6 text-left border-b border-brand-border bg-background">
-                <div className="space-y-2 max-w-2xl text-left">
-                    <h1 className="text-xl md:text-2xl font-bold text-white">
-                        Pilih sisi. Bela opinimu.
-                    </h1>
-                    <p className="text-zinc-500 text-[15px]">
-                        KUBU adalah tempat kamu ikut topik yang lagi ramai, memilih kubu, lalu melihat argumen mana yang paling kuat.
-                    </p>
-                    <div className="pt-2">
-                        <button
-                            onClick={() => {
-                                const element = document.getElementById('opinion-feed');
-                                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }}
-                            className="px-5 py-2 bg-white hover:bg-zinc-200 text-black font-bold rounded-full transition-colors text-[15px] cursor-pointer"
+            {/* Compose Section (Twitter Style) */}
+            <section className="px-4 py-4 sm:py-5 border-b border-brand-border bg-background flex gap-3 sm:gap-4">
+                {/* Avatar */}
+                <div className="shrink-0">
+                    <div 
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-choice-left to-choice-right p-[1.5px] cursor-pointer shadow-md" 
+                        onClick={() => router.push(user ? '/profile' : '/auth/login')}
+                    >
+                        <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center text-white font-black text-lg uppercase select-none">
+                            {user?.user_metadata?.username?.[0] || user?.email?.[0] || 'U'}
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Compose Input & Actions */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <div 
+                        onClick={() => router.push('/create')}
+                        className="w-full text-left py-2 sm:py-3 text-lg sm:text-xl text-zinc-500 font-medium cursor-text"
+                    >
+                        Apa topik yang sedang terjadi?
+                    </div>
+
+                    <div className="flex items-center justify-between mt-2 sm:mt-3 pt-1">
+                        {/* Icons */}
+                        <div className="flex items-center gap-1 sm:gap-1.5 text-brand-blue -ml-2">
+                            <button className="p-2 hover:bg-brand-blue/10 rounded-full transition-colors hidden sm:block" onClick={() => router.push('/create')}>
+                                <ImageIcon className="w-[18px] h-[18px]" />
+                            </button>
+                            <button className="p-2 hover:bg-brand-blue/10 rounded-full transition-colors hidden sm:block" onClick={() => router.push('/create')}>
+                                <div className="w-[18px] h-[18px] border-[1.5px] border-current rounded-sm flex items-center justify-center font-bold text-[9px]">GIF</div>
+                            </button>
+                            <button className="p-2 hover:bg-brand-blue/10 rounded-full transition-colors" onClick={() => router.push('/create')}>
+                                <BarChart2 className="w-[18px] h-[18px]" />
+                            </button>
+                            <button className="p-2 hover:bg-brand-blue/10 rounded-full transition-colors" onClick={() => router.push('/create')}>
+                                <Smile className="w-[18px] h-[18px]" />
+                            </button>
+                            <button className="p-2 hover:bg-brand-blue/10 rounded-full transition-colors hidden sm:block" onClick={() => router.push('/create')}>
+                                <Calendar className="w-[18px] h-[18px]" />
+                            </button>
+                            <button className="p-2 hover:bg-brand-blue/10 rounded-full transition-colors hidden sm:block" onClick={() => router.push('/create')}>
+                                <MapPin className="w-[18px] h-[18px]" />
+                            </button>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button 
+                            onClick={() => router.push('/create')}
+                            className="bg-brand-blue hover:bg-brand-blue/90 text-white font-bold px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-[13px] sm:text-[15px] transition-colors shadow-sm"
                         >
-                            Pilih Kubumu
+                            Lempar Topik
                         </button>
                     </div>
                 </div>
