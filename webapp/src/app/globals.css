@@ -1,13 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050507;
-  --foreground: #F4F4F5;
-  --brand-blue: #0066FF;
-  --brand-card: #0D0D10;
-  --brand-border: #1E1E22;
-  --choice-left: #F43F5E;
-  --choice-right: #0EA5E9;
+  --background: #080B12;
+  --surface: #111827;
+  --surface-hover: #172033;
+  --border: #253044;
+  --text-utama: #F8FAFC;
+  --text-sekunder: #94A3B8;
+  --accent-utama: #3B82F6;
+  --kubu-kiri: #F43F5E;
+  --kubu-kanan: #06B6D4;
+  --success: #22C55E;
+  --warning: #F59E0B;
+
+  /* Keep legacy variables for compatibility */
+  --foreground: var(--text-utama);
+  --brand-blue: var(--accent-utama);
+  --brand-card: var(--surface);
+  --brand-border: var(--border);
+  --choice-left: var(--kubu-kiri);
+  --choice-right: var(--kubu-kanan);
 }
 
 @theme inline {
@@ -21,6 +33,9 @@
   --color-neon-pink: var(--choice-left);
   --color-neon-cyan: var(--choice-right);
   --color-neon-dark: var(--background);
+  --color-text-sec: var(--text-sekunder);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -36,7 +51,7 @@ body {
 
 /* Custom Selection */
 ::selection {
-  background: rgba(0, 102, 255, 0.25);
+  background: rgba(59, 130, 246, 0.25);
   color: #FFFFFF;
 }
 
@@ -51,10 +66,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272A;
+  background: #253044;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3F3F46;
-}
+  background: #172033;
+}

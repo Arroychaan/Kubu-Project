@@ -14,7 +14,7 @@ export default function ConditionalNavbar({ children, paddingOnly = false }: Con
     if (paddingOnly) {
         // For the main content wrapper: add pt-16 padding only on non-auth pages
         return (
-            <div className={isAuthPage ? '' : 'pt-16'}>
+            <div className={isAuthPage ? '' : 'md:pt-0 pt-16'}>
                 {children}
             </div>
         );

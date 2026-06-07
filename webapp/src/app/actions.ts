@@ -239,7 +239,7 @@ export async function createPoll(
             }
             return {
                 success: false,
-                message: 'Gagal membuat polling. Silakan coba lagi.'
+                message: 'Gagal membuat topik. Silakan coba lagi.'
             };
         }
 
@@ -267,7 +267,7 @@ export async function createPoll(
         // 8. Success
         return {
             success: true,
-            message: 'Polling berhasil dibuat!',
+            message: 'Topik berhasil dibuat!',
             data: { pollId: newPoll?.id }
         };
 
@@ -300,7 +300,7 @@ export async function getOfficialPoll(): Promise<ActionResponse> {
             console.error('Fetch official poll error:', error);
             return {
                 success: false,
-                message: 'Polling resmi tidak ditemukan.'
+                message: 'Topik resmi tidak ditemukan.'
             };
         }
 
@@ -317,7 +317,7 @@ export async function getOfficialPoll(): Promise<ActionResponse> {
 
         return {
             success: true,
-            message: 'Polling resmi berhasil dimuat.',
+            message: 'Topik resmi berhasil dimuat.',
             data: {
                 ...poll,
                 stats: {
@@ -361,7 +361,7 @@ export async function getCommunityPolls(limit = 10, offset = 0, searchQuery = ''
             console.error('Fetch community polls error:', error);
             return {
                 success: false,
-                message: 'Gagal memuat daftar polling.'
+                message: 'Gagal memuat daftar topik.'
             };
         }
 
@@ -395,7 +395,7 @@ export async function getCommunityPolls(limit = 10, offset = 0, searchQuery = ''
 
         return {
             success: true,
-            message: 'Polling komunitas berhasil dimuat.',
+            message: 'Topik komunitas berhasil dimuat.',
             data: pollsWithStats
         };
 
@@ -480,7 +480,7 @@ export async function toggleOfficialPoll(pollId: string, isOfficial: boolean): P
             .single();
 
         if (!profile?.is_admin) {
-            return { success: false, message: 'Akses ditolak. Anda bukan administrator.' };
+            return { success: false, message: 'Akses ditolak. Kamu bukan administrator.' };
         }
 
         const { error } = await supabase
@@ -490,14 +490,14 @@ export async function toggleOfficialPoll(pollId: string, isOfficial: boolean): P
 
         if (error) {
             console.error('Error toggling official status:', error);
-            return { success: false, message: 'Gagal memperbarui status polling.' };
+            return { success: false, message: 'Gagal memperbarui status topik.' };
         }
 
         return {
             success: true,
             message: isOfficial 
-                ? 'Jajak pendapat berhasil diatur menjadi Polling Resmi!' 
-                : 'Jajak pendapat berhasil diubah menjadi Polling Komunitas.'
+                ? 'Topik berhasil diatur menjadi Topik Utama!' 
+                : 'Topik berhasil diubah menjadi Topik Komunitas.'
         };
     } catch (error) {
         console.error('Unexpected toggleOfficialPoll error:', error);
@@ -525,7 +525,7 @@ export async function updateDailyPollLimit(limit: number): Promise<ActionRespons
             .single();
 
         if (!profile?.is_admin) {
-            return { success: false, message: 'Akses ditolak. Anda bukan administrator.' };
+            return { success: false, message: 'Akses ditolak. Kamu bukan administrator.' };
         }
 
         const { error } = await supabase
@@ -539,7 +539,7 @@ export async function updateDailyPollLimit(limit: number): Promise<ActionRespons
 
         return {
             success: true,
-            message: `Batas pembuatan jajak pendapat harian berhasil diubah menjadi ${limit} kali.`
+            message: `Batas pembuatan topik harian berhasil diubah menjadi ${limit} kali.`
         };
     } catch (error) {
         console.error('Unexpected updateDailyPollLimit error:', error);
@@ -886,5 +886,229 @@ export async function reportContent(
         return { success: false, message: 'Terjadi kesalahan sistem.' };
     }
 }
+
+// ============================================
+// SERVER ACTION: SEED INITIAL TOPICS
+// ============================================
+export async function seedInitialTopics(): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        // 1. Check if polls table already has seeded topics
+        const { count, error: countError } = await supabase
+            .from('polls')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+            console.error('Check polls count error:', countError);
+            return { success: false, message: 'Gagal memverifikasi jumlah topik.' };
+        }
+
+        // If there are already polls in the database, don't seed again
+        if (count && count > 0) {
+            return { success: true, message: 'Database sudah terisi.' };
+        }
+
+        const SEED_TOPICS = [
+            {
+                id: 't0000000-0000-0000-0000-000000000001',
+                question: 'Tim bubur diaduk masih punya alasan paling kuat, kamu di kubu mana?',
+                option_a: 'Kubu Diaduk',
+                option_b: 'Kubu Tidak Diaduk',
+                creator_id: 'a0000000-0000-0000-0000-000000000001',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'a', text: 'Kalau diaduk, rasa kuah dan topping lebih rata.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'Kalau tidak diaduk, tekstur buburnya lebih jelas.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000002',
+                question: 'Apakah Android lebih bebas dan worth it daripada iPhone?',
+                option_a: 'Android Bebas',
+                option_b: 'iPhone Stabil',
+                creator_id: 'a0000000-0000-0000-0000-000000000002',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Android lebih bebas pasang aplikasi dan modifikasi tampilan.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'iPhone lebih aman, stabil, dan pembaruan OS terjamin.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000003',
+                question: 'Kuliah IT masih penting buat programmer pemula?',
+                option_a: 'Sangat Penting',
+                option_b: 'Tidak Terlalu',
+                creator_id: 'a0000000-0000-0000-0000-000000000003',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Kuliah penting untuk melatih logika dasar dan membangun jaringan relasi.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'b', text: 'Portofolio dan skill praktek jauh lebih dihargai dibanding ijazah formal.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000004',
+                question: 'Kerja remote penuh bikin hidup lebih sehat atau malah stres?',
+                option_a: 'Lebih Sehat',
+                option_b: 'Malah Stres',
+                creator_id: 'a0000000-0000-0000-0000-000000000001',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'a', text: 'Hemat waktu commute di jalan, bisa lebih dekat dengan keluarga.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'Batas kerja jadi kabur dan kurang sosialisasi tatap muka.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000005',
+                question: 'AI bikin programmer makin kuat?',
+                option_a: 'Makin Kuat',
+                option_b: 'Makin Tergantikan',
+                creator_id: 'a0000000-0000-0000-0000-000000000002',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Programmer yang bisa memakai AI akan punya output jauh lebih cepat.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'Pemula yang cuma copy-paste AI akan makin sulit membangun fondasi.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000006',
+                question: 'Nasi Padang lebih enak dibungkus daripada makan di tempat?',
+                option_a: 'Enak Dibungkus',
+                option_b: 'Makan di Tempat',
+                creator_id: 'a0000000-0000-0000-0000-000000000003',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Porsi nasi Padang yang dibungkus biasanya jauh lebih banyak.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'b', text: 'Bisa makan hangat dengan kuah melimpah dan nambah sambal langsung.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000007',
+                question: 'Cowok harus selalu mulai chat duluan di chat app?',
+                option_a: 'Harus Mulai',
+                option_b: 'Siapa Saja Bebas',
+                creator_id: 'a0000000-0000-0000-0000-000000000001',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'a', text: 'Memulai duluan menunjukkan inisiatif dan keseriusan.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'Komunikasi dua arah, siapa saja yang tertarik boleh menyapa.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000008',
+                question: 'Gen Z lebih susah sukses daripada generasi sebelumnya?',
+                option_a: 'Lebih Susah',
+                option_b: 'Sama Saja/Gampang',
+                creator_id: 'a0000000-0000-0000-0000-000000000002',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Harga properti meroket tajam sedangkan kenaikan gaji stagnan.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'Banyak karir baru di era digital seperti konten kreator dan e-commerce.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000009',
+                question: 'Es teh manis adalah minuman nasional tidak resmi Indonesia?',
+                option_a: 'Setuju Banget',
+                option_b: 'Biasa Saja',
+                creator_id: 'a0000000-0000-0000-0000-000000000003',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Selalu jadi pilihan pertama di warung makan mana pun.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'b', text: 'Minuman biasa, masih banyak teh lokal tradisional yang lebih berkarakter.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000010',
+                question: 'Main game bisa jadi produktif kalau diarahkan?',
+                option_a: 'Produktif',
+                option_b: 'Hanya Buang Waktu',
+                creator_id: 'a0000000-0000-0000-0000-000000000001',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'a', text: 'Mengasah refleks strategis dan bisa menghasilkan uang dari e-sports.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'Lebih banyak bikin kecanduan dan mengabaikan kewajiban dunia nyata.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000011',
+                question: 'Orang pendiam lebih sering punya opini tajam?',
+                option_a: 'Sering Tajam',
+                option_b: 'Belum Tentu',
+                creator_id: 'a0000000-0000-0000-0000-000000000002',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Mereka meluangkan lebih banyak waktu untuk mengamati dan menganalisis.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000003', choice: 'b', text: 'Sikap pendiam tidak berkorelasi langsung dengan kedalaman berpikir.' }
+                ]
+            },
+            {
+                id: 't0000000-0000-0000-0000-000000000012',
+                question: 'Skripsi lebih berat karena tekanan mental daripada teknis?',
+                option_a: 'Karena Mental',
+                option_b: 'Karena Teknis',
+                creator_id: 'a0000000-0000-0000-0000-000000000003',
+                comments: [
+                    { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Menghadapi dosen pembimbing dan godaan overthinking jauh lebih berat.' },
+                    { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'b', text: 'Mengolah data penelitian lapangan dan menyusun metode kuantitatif sangat rumit.' }
+                ]
+            }
+        ];
+
+        // Insert polls, votes, and comments sequentially
+        for (const topic of SEED_TOPICS) {
+            const { error: pollError } = await supabase.from('polls').insert({
+                id: topic.id,
+                question: topic.question,
+                option_a: topic.option_a,
+                option_b: topic.option_b,
+                creator_id: topic.creator_id,
+                is_official: false,
+                is_featured: true
+            });
+
+            if (pollError && pollError.code !== '23505') {
+                console.error(`Error inserting poll ${topic.id}:`, pollError);
+            }
+
+            for (const comment of topic.comments) {
+                // Insert vote first due to foreign key constraints
+                await supabase.from('votes').insert({
+                    poll_id: topic.id,
+                    user_id: comment.user_id,
+                    choice: comment.choice
+                });
+
+                // Insert comment
+                await supabase.from('comments').insert({
+                    poll_id: topic.id,
+                    user_id: comment.user_id,
+                    choice: comment.choice,
+                    text: comment.text
+                });
+            }
+        }
+
+        return { success: true, message: 'Database successfully seeded with 12 topics!' };
+
+    } catch (error) {
+        console.error('Unexpected seed error:', error);
+        return { success: false, message: 'Terjadi kesalahan saat seeding.' };
+    }
+}
+
+// ============================================
+// SERVER ACTION: SUPPORT COMMENT (ARGUMENT)
+// ============================================
+export async function supportComment(authorId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        // Check authentication
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { success: false, message: 'Kamu harus masuk terlebih dahulu.' };
+        }
+
+        // Increment points for argument creator
+        await supabase.rpc('increment_user_points', { p_user_id: authorId, p_amount: 10 });
+
+        return { success: true, message: 'Dukungan berhasil dikirim!' };
+    } catch (error) {
+        console.error('Support comment error:', error);
+        return { success: false, message: 'Gagal mengirim dukungan.' };
+    }
+}
+
+
 
 

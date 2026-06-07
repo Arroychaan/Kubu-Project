@@ -17,10 +17,12 @@ interface LeaderboardClientProps {
 }
 
 export function getUserTitle(points: number) {
-    if (points >= 1000) return { name: 'Tokoh Kubu', icon: '👑', color: 'text-amber-500 border-amber-500/10 bg-amber-500/5' };
-    if (points >= 300) return { name: 'Pengamat Aktif', icon: '🔥', color: 'text-rose-500 border-rose-500/10 bg-rose-500/5' };
-    if (points >= 100) return { name: 'Partisipan Pro', icon: '⚡', color: 'text-blue-500 border-blue-500/10 bg-blue-500/5' };
-    return { name: 'Kubu Rookie', icon: '🔰', color: 'text-zinc-400 border-zinc-500/10 bg-zinc-500/5' };
+    if (points >= 1500) return { name: 'Suara Publik', icon: '📢', color: 'text-cyan-400 border-cyan-400/15 bg-cyan-400/5' };
+    if (points >= 1000) return { name: 'Tokoh Kubu', icon: '👑', color: 'text-amber-500 border-amber-500/15 bg-amber-500/5' };
+    if (points >= 500) return { name: 'Pemantik Diskusi', icon: '🔥', color: 'text-orange-500 border-orange-500/15 bg-orange-500/5' };
+    if (points >= 250) return { name: 'Penggerak Opini', icon: '⚡', color: 'text-indigo-400 border-indigo-400/15 bg-indigo-400/5' };
+    if (points >= 100) return { name: 'Penantang', icon: '⚔️', color: 'text-rose-500 border-rose-500/15 bg-rose-500/5' };
+    return { name: 'Suara Baru', icon: '🔰', color: 'text-zinc-400 border-zinc-500/15 bg-zinc-500/5' };
 }
 
 export default function LeaderboardClient({ users }: LeaderboardClientProps) {
@@ -75,10 +77,10 @@ export default function LeaderboardClient({ users }: LeaderboardClientProps) {
                     </Link>
                     <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-2.5 uppercase select-none">
                         <Trophy className="w-7 h-7 text-amber-400 shrink-0 animate-pulse" />
-                        Papan Peringkat
+                        Peringkat Pengaruh
                     </h1>
                     <p className="text-zinc-400 text-xs sm:text-sm mt-1 font-semibold leading-normal">
-                        Lihat pengguna dengan reputasi opini tertinggi di KUBU.
+                        Lihat siapa yang opininya paling banyak menggerakkan diskusi minggu ini.
                     </p>
                 </div>
             </div>
@@ -143,7 +145,7 @@ export default function LeaderboardClient({ users }: LeaderboardClientProps) {
             {/* Standard User Rankings */}
             <div className="bg-brand-card/30 border border-brand-border/80 rounded-[24px] overflow-hidden shadow-2xl backdrop-blur-xl">
                 <div className="px-6 py-3.5 border-b border-brand-border/60 flex items-center justify-between bg-black/40 select-none">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Peringkat Arena</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Peringkat Pengaruh</span>
                     <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Reputasi &amp; Poin</span>
                 </div>
 

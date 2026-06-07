@@ -1,12 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import PollCard from './PollCard';
-import CreatePollModal from './CreatePollModal';
 import { Poll } from '@/types';
-import { MessageSquare, Users, Flame, Zap } from 'lucide-react';
+import { Flame, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '@/store/useAuthStore';
+import SocialLayout from './SocialLayout';
+import OnboardingWizard from './OnboardingWizard';
 
 interface HomeClientProps {
     officialPoll: Poll | null;
@@ -21,7 +23,22 @@ interface HomeClientProps {
 
 export default function HomeClient({ officialPoll, communityPolls, stats, recentActivities }: HomeClientProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const activeTab = searchParams.get('tab') === 'panas' ? 'panas' : 'terbaru';
+
     const [activityIndex, setActivityIndex] = useState(0);
+    const { user } = useAuthStore();
+    const [showOnboarding, setShowOnboarding] = useState(false);
+
+    // Check for onboarding status on client mount
+    useEffect(() => {
+        if (user) {
+            const completed = localStorage.getItem(`kubu_onboarding_completed_${user.id}`);
+            if (completed !== 'true') {
+                setShowOnboarding(true);
+            }
+        }
+    }, [user]);
 
     useEffect(() => {
         if (recentActivities.length <= 1) return;
@@ -31,64 +48,46 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
         return () => clearInterval(interval);
     }, [recentActivities.length]);
 
-    const handlePollCreated = () => {
-        // Refresh the page to show new poll
-        router.refresh();
-    };
+    // Filter community polls based on activeTab
+    const filteredPolls = activeTab === 'panas'
+        ? [...communityPolls].sort((a, b) => {
+              const totalA = (a.stats?.count_a || 0) + (a.stats?.count_b || 0);
+              const totalB = (b.stats?.count_a || 0) + (b.stats?.count_b || 0);
+              return totalB - totalA; // Hot topics have most votes
+          })
+        : communityPolls;
 
     return (
-        <>
-            {/* Main Welcome Hero Section (Compact & Focused) */}
-            <section className="mb-8 py-6 md:py-10 text-left relative overflow-hidden bg-gradient-to-b from-zinc-900/30 to-zinc-950/10 border border-brand-border/40 rounded-2xl p-6 sm:p-8 md:p-10 shadow-xl backdrop-blur-md">
-                {/* Subtle visual ambient glows inside container */}
-                <div className="absolute right-[-10%] top-[-10%] w-60 h-60 bg-choice-right/5 rounded-full blur-[80px] pointer-events-none" />
-                <div className="absolute left-[-10%] bottom-[-10%] w-60 h-60 bg-choice-left/5 rounded-full blur-[80px] pointer-events-none" />
+        <SocialLayout activeTab={activeTab === 'panas' ? 'Topik Panas' : 'Beranda'}>
+            {/* Onboarding Wizard Modal overlay */}
+            {user && showOnboarding && (
+                <OnboardingWizard userId={user.id} onComplete={() => setShowOnboarding(false)} />
+            )}
 
-                <div className="space-y-5 relative z-10 max-w-2xl">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900/80 border border-brand-border rounded-full text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
-                        Platform Diskusi Opini Publik
-                    </div>
-
-                    {/* Title */}
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.1] text-white">
-                        Suarakan Opinimu.<br />
-                        <span className="bg-gradient-to-r from-choice-left via-white to-choice-right bg-clip-text text-transparent">
-                            Tentukan Kubumu.
-                        </span>
+            {/* Short & Sharp Hero Section */}
+            <section className="mb-6 py-5 md:py-6 text-left relative overflow-hidden bg-gradient-to-b from-zinc-900/10 to-zinc-950/5 border border-brand-border/30 rounded-2xl p-5 sm:p-6 shadow-sm backdrop-blur-sm select-none">
+                <div className="space-y-4 relative z-10 max-w-2xl text-left">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-none text-white uppercase">
+                        Pilih sisi. Bela opinimu.
                     </h1>
 
-                    {/* Description */}
-                    <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed font-semibold">
-                        KUBU adalah tempat kamu suarakan opini secara bebas, dukung kubu pilihanmu dengan argumen terkuat, dan lihat pergeseran suara publik secara jujur dan transparan.
-                        {stats.totalVotes > 0 && (
-                            <span className="block mt-2 text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
-                                🗳️ Telah memproses {stats.totalVotes.toLocaleString()} suara di {stats.totalPolls.toLocaleString()} topik diskusi terkini.
-                            </span>
-                        )}
+                    <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed font-bold">
+                        KUBU adalah tempat kamu ikut topik yang lagi ramai, memilih kubu, lalu melihat argumen mana yang paling kuat.
                     </p>
 
-                    {/* CTAs */}
-                    <div className="flex flex-wrap gap-3 pt-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 pt-1">
                         <button
                             onClick={() => {
                                 const element = document.getElementById('opinion-feed');
-                                element?.scrollIntoView({ behavior: 'smooth' });
+                                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             }}
-                            className="px-5 py-2.5 bg-white hover:bg-zinc-200 text-black font-black rounded-xl transition-all shadow-md active:scale-95 duration-150 text-[10px] sm:text-xs tracking-wider uppercase cursor-pointer"
+                            className="px-5 py-2.5 bg-white hover:bg-zinc-200 text-black font-black rounded-xl transition-all shadow-md active:scale-95 duration-150 text-[10px] sm:text-xs tracking-wider uppercase cursor-pointer text-center"
                         >
-                            Ikut Berpendapat
+                            Pilih Kubumu
                         </button>
-                        <button
-                            onClick={() => {
-                                window.dispatchEvent(new CustomEvent('kubu-open-create-modal'));
-                            }}
-                            className="px-5 py-2.5 bg-zinc-900/60 hover:bg-zinc-800/80 border border-brand-border text-white font-black rounded-xl transition-all duration-150 flex items-center gap-2 cursor-pointer active:scale-95 text-[10px] sm:text-xs uppercase tracking-wider"
-                        >
-                            <Zap className="w-3.5 h-3.5 text-brand-blue" />
-                            Buat Topik Baru
-                        </button>
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider select-none">
+                            Mulai dari topik ringan, isu viral, sampai debat sehari-hari.
+                        </span>
                     </div>
                 </div>
             </section>
@@ -124,7 +123,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                                             </>
                                         ) : (
                                             <>
-                                                <span>menulis opini:</span>
+                                                <span>menulis argumen:</span>
                                                 <span className="text-zinc-300 font-semibold italic truncate">
                                                     "{act.text}"
                                                 </span>
@@ -142,12 +141,40 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                 </div>
             )}
 
-            {/* Feed List (Feed-First structure) */}
-            <div id="opinion-feed" className="space-y-8 scroll-mt-24">
-                {/* Official Poll Section */}
+            {/* Custom Tabs (Untuk Kamu & Terbaru) */}
+            <div className="flex items-center gap-6 border-b border-brand-border/60 pb-3 mb-5 select-none text-left">
+                <button
+                    onClick={() => {
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.delete('tab');
+                        router.push(`/?${params.toString()}`);
+                    }}
+                    className={`text-xs font-black uppercase tracking-wider transition-colors cursor-pointer ${
+                        activeTab === 'terbaru' ? 'text-white border-b-2 border-brand-blue pb-3 -mb-3.5' : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                >
+                    Untuk Kamu
+                </button>
+                <button
+                    onClick={() => {
+                        const params = new URLSearchParams(searchParams.toString());
+                        params.set('tab', 'panas');
+                        router.push(`/?${params.toString()}`);
+                    }}
+                    className={`text-xs font-black uppercase tracking-wider transition-colors cursor-pointer ${
+                        activeTab === 'panas' ? 'text-white border-b-2 border-brand-blue pb-3 -mb-3.5' : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                >
+                    Terbaru
+                </button>
+            </div>
+
+            {/* Feed List */}
+            <div id="opinion-feed" className="space-y-6 scroll-mt-6">
+                {/* Official Poll Section (Topbar highlight) */}
                 {officialPoll && (
                     <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-zinc-500 font-black text-[10px] uppercase tracking-widest select-none text-left">
+                        <div className="flex items-center gap-2 text-zinc-500 font-black text-[9px] uppercase tracking-widest select-none text-left">
                             <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
                             Pilihan Utama Hari Ini
                         </div>
@@ -155,36 +182,42 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                     </div>
                 )}
 
-                {/* Community Polls Section */}
+                {/* Community Feed Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-brand-border/60 pb-2.5 mb-2 select-none">
-                        <div className="flex items-center gap-2 text-zinc-500 font-black text-[10px] uppercase tracking-widest text-left">
+                    <div className="flex items-center justify-between border-b border-brand-border/40 pb-2 mb-1 select-none">
+                        <div className="flex items-center gap-2 text-zinc-500 font-black text-[9px] uppercase tracking-widest text-left">
                             <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-                            Diskusi Komunitas
+                            Feed Opini Publik
                         </div>
                         <span className="text-[9px] text-zinc-600 font-bold uppercase">
-                            {communityPolls.length} Topik Aktif
+                            {filteredPolls.length} Topik Panas
                         </span>
                     </div>
 
-                    {communityPolls.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-6">
-                            {communityPolls.map((poll) => (
+                    {filteredPolls.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-5">
+                            {filteredPolls.map((poll) => (
                                 <PollCard key={poll.id} poll={poll} />
                             ))}
                         </div>
                     ) : (
-                        <div className="bg-brand-card/30 border border-brand-border/60 rounded-2xl p-10 text-center shadow-lg select-none">
-                            <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">
-                                Belum ada topik diskusi komunitas saat ini.
+                        <div className="bg-brand-card/30 border border-brand-border/60 rounded-2xl p-10 text-center shadow-lg select-none flex flex-col items-center gap-3">
+                            <p className="text-zinc-400 text-xs font-bold uppercase tracking-wider">
+                                Belum ada topik panas hari ini.
                             </p>
+                            <p className="text-zinc-500 text-[10px] font-semibold">
+                                Jadilah orang pertama yang memantik diskusi.
+                            </p>
+                            <button
+                                onClick={() => window.dispatchEvent(new CustomEvent('kubu-open-create-modal'))}
+                                className="px-5 py-2.5 bg-brand-blue hover:bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md shadow-brand-blue/15"
+                            >
+                                Lempar Topik Pertama
+                            </button>
                         </div>
                     )}
                 </div>
             </div>
-
-            {/* Create Poll Modal */}
-            <CreatePollModal onPollCreated={handlePollCreated} />
-        </>
+        </SocialLayout>
     );
 }

@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChoiceBar from './ChoiceBar';
-import { vote, checkUserVote, getComments, addComment, reportContent } from '@/app/actions';
+import { vote, checkUserVote, getComments, addComment, reportContent, supportComment } from '@/app/actions';
 import { Poll } from '@/types';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MessageCircle, Share2, Info, Flag, AlertTriangle, X } from 'lucide-react';
@@ -30,16 +30,22 @@ const formatTime = (dateStr: string) => {
 
 function CommentCard({ 
     comment, 
+    poll,
     isLeft, 
     onReply, 
     canReply,
-    onReport
+    onReport,
+    onSupport,
+    isSupported
 }: { 
     comment: any; 
+    poll: any;
     isLeft: boolean; 
     onReply?: () => void; 
     canReply?: boolean;
     onReport?: () => void;
+    onSupport?: () => void;
+    isSupported?: boolean;
 }) {
     const profile = comment.profiles || {};
     const username = profile.username || 'Anonymous';
@@ -50,22 +56,31 @@ function CommentCard({
         minute: '2-digit'
     });
 
+    const kubuName = isLeft ? poll.option_a : poll.option_b;
+
     return (
-        <div className={`p-3 bg-zinc-950/40 border rounded-xl relative ${
+        <div className={`p-3.5 bg-zinc-950/40 border rounded-2xl relative ${
             isLeft 
                 ? 'border-choice-left/15 hover:border-choice-left/35' 
                 : 'border-choice-right/15 hover:border-choice-right/35'
         } transition-all`}>
-            <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-start justify-between gap-2 mb-2 select-none">
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-zinc-900 border border-brand-border flex items-center justify-center text-[9px] font-black text-white uppercase select-none">
                         {username[0]}
                     </div>
                     <div>
                         <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] text-white font-bold">{username}</span>
+                            <span className="text-[10px] text-white font-bold">@{username}</span>
                             <span className={`inline-flex items-center px-1.5 py-0.25 border rounded-[3px] text-[7px] font-black uppercase tracking-wider ${titleInfo.color}`}>
                                 {titleInfo.name}
+                            </span>
+                            <span className={`inline-block px-1.5 py-0.25 border rounded-[3px] text-[7px] font-black uppercase tracking-wider ${
+                                isLeft 
+                                    ? 'bg-choice-left/5 border-choice-left/10 text-choice-left' 
+                                    : 'bg-choice-right/5 border-choice-right/10 text-choice-right'
+                            }`}>
+                                Kubu {kubuName}
                             </span>
                         </div>
                     </div>
@@ -84,17 +99,34 @@ function CommentCard({
                     )}
                 </div>
             </div>
+            
             <p className="text-xs text-zinc-300 font-medium leading-relaxed pl-8 pr-12 break-words">
                 {comment.is_toxic ? '🤡' : comment.text}
             </p>
-            {canReply && onReply && (
+
+            <div className="flex items-center gap-4 mt-3.5 pl-8 text-[9px] font-black uppercase tracking-wider select-none">
                 <button
-                    onClick={onReply}
-                    className="absolute bottom-2 right-3 text-[9px] text-zinc-500 hover:text-white font-black uppercase tracking-wider transition-colors cursor-pointer select-none"
+                    onClick={onSupport}
+                    disabled={isSupported}
+                    className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
+                        isSupported 
+                            ? 'text-emerald-500 font-extrabold' 
+                            : 'text-zinc-500 hover:text-white'
+                    }`}
                 >
-                    Balas
+                    <span>👍</span>
+                    <span>{isSupported ? 'Didukung' : 'Dukung argumen ini'}</span>
                 </button>
-            )}
+                
+                {canReply && onReply && (
+                    <button
+                        onClick={onReply}
+                        className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                    >
+                        Balas
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
@@ -121,7 +153,42 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [commentText, setCommentText] = useState('');
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-    const [commentSectionTab, setCommentSectionTab] = useState<'a' | 'b'>('a');
+    const [commentSectionTab, setCommentSectionTab] = useState<'semua' | 'a' | 'b' | 'terkuat'>('semua');
+    const [supportedComments, setSupportedComments] = useState<{ [key: string]: boolean }>({});
+
+    useEffect(() => {
+        if (user) {
+            const loaded: { [key: string]: boolean } = {};
+            const allLoadedComments = [...commentsA, ...commentsB];
+            allLoadedComments.forEach(comment => {
+                const val = localStorage.getItem(`kubu_comment_supported_${user.id}_${comment.id}`);
+                if (val === 'true') {
+                    loaded[comment.id] = true;
+                }
+            });
+            setSupportedComments(loaded);
+        }
+    }, [user, commentsA, commentsB]);
+
+    const handleSupportComment = async (commentId: string, authorId: string) => {
+        if (!user) {
+            setMessage({ type: 'error', text: 'Silakan masuk terlebih dahulu untuk mendukung argumen.' });
+            setTimeout(() => setMessage(null), 4000);
+            return;
+        }
+
+        const res = await supportComment(authorId);
+        if (res.success) {
+            localStorage.setItem(`kubu_comment_supported_${user.id}_${commentId}`, 'true');
+            setSupportedComments(prev => ({ ...prev, [commentId]: true }));
+            setMessage({ type: 'success', text: 'Dukungan kamu berhasil dikirim!' });
+            setTimeout(() => setMessage(null), 3000);
+            fetchPollComments();
+        } else {
+            setMessage({ type: 'error', text: res.message });
+            setTimeout(() => setMessage(null), 4000);
+        }
+    };
     const [replyTo, setReplyTo] = useState<{ id: string; username: string } | null>(null);
     const [reportTarget, setReportTarget] = useState<{ type: 'poll' | 'comment'; id: string; name?: string } | null>(null);
 
@@ -226,8 +293,9 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                 setMessage({ type: 'error', text: result.message });
                 setTimeout(() => setMessage(null), 4000);
             } else {
-                setMessage({ type: 'success', text: 'Pilihan kamu berhasil disimpan!' });
-                setTimeout(() => setMessage(null), 3000);
+                const choiceLabel = choice === 'a' ? poll.option_a : poll.option_b;
+                setMessage({ type: 'success', text: `Kamu masuk Kubu ${choiceLabel}. Sekarang tulis argumenmu biar kubumu makin kuat.` });
+                setTimeout(() => setMessage(null), 4000);
             }
         });
     };
@@ -480,119 +548,104 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
 
                         {/* Comments Display */}
                         <div className="flex flex-col space-y-4">
-                            {/* Mobile Tab Header (hidden on md) */}
-                            <div className="flex border-b border-brand-border md:hidden">
-                                <button
-                                    type="button"
-                                    onClick={() => setCommentSectionTab('a')}
-                                    className={`flex-1 pb-2 text-[10px] font-black uppercase tracking-wider border-b-2 text-center transition-all ${
-                                        commentSectionTab === 'a' 
-                                            ? 'border-choice-left text-choice-left' 
-                                            : 'border-transparent text-zinc-500'
-                                    }`}
-                                >
-                                    Alasan {poll.option_a} ({commentsA.length})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setCommentSectionTab('b')}
-                                    className={`flex-1 pb-2 text-[10px] font-black uppercase tracking-wider border-b-2 text-center transition-all ${
-                                        commentSectionTab === 'b' 
-                                            ? 'border-choice-right text-choice-right' 
-                                            : 'border-transparent text-zinc-500'
-                                    }`}
-                                >
-                                    Alasan {poll.option_b} ({commentsB.length})
-                                </button>
+                            {/* Segmented Tab Headers */}
+                            <div className="flex border-b border-brand-border overflow-x-auto gap-1 no-scrollbar pb-1">
+                                {[
+                                    { id: 'semua', label: 'Semua Opini', count: parentsA.length + parentsB.length },
+                                    { id: 'a', label: `Kubu ${poll.option_a}`, count: parentsA.length, activeColor: 'border-choice-left text-choice-left' },
+                                    { id: 'b', label: `Kubu ${poll.option_b}`, count: parentsB.length, activeColor: 'border-choice-right text-choice-right' },
+                                    { id: 'terkuat', label: '🔥 Argumen Terkuat' }
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        type="button"
+                                        onClick={() => setCommentSectionTab(tab.id as any)}
+                                        className={`pb-2 px-3 text-[10px] font-black uppercase tracking-wider border-b-2 text-center transition-all whitespace-nowrap cursor-pointer ${
+                                            commentSectionTab === tab.id
+                                                ? tab.activeColor || 'border-brand-blue text-brand-blue'
+                                                : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                                        }`}
+                                    >
+                                        {tab.label} {tab.count !== undefined ? `(${tab.count})` : ''}
+                                    </button>
+                                ))}
                             </div>
 
-                            {/* Dual columns for desktop & toggle for mobile */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Column A */}
-                                <div className={`space-y-3 ${commentSectionTab === 'a' ? 'block' : 'hidden md:block'}`}>
-                                    <h4 className="hidden md:flex items-center gap-2 text-xs font-black text-choice-left uppercase tracking-wider border-b border-brand-border/60 pb-2 mb-3">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-choice-left" />
-                                        Alasan memilih {poll.option_a} ({commentsA.length})
-                                    </h4>
-                                    <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
-                                        {isLoadingComments ? (
-                                            <p className="text-zinc-600 text-xs italic text-center py-6 font-medium">Memuat opini...</p>
-                                        ) : parentsA.length > 0 ? (
-                                            parentsA.map((comment: any) => {
-                                                const childReplies = allComments.filter((c: any) => c.parent_id === comment.id);
-                                                return (
-                                                    <div key={comment.id} className="space-y-2">
-                                                        <CommentCard 
-                                                            comment={comment} 
-                                                            isLeft={true} 
-                                                            canReply={!!user && !hasUserCommented}
-                                                            onReply={() => setReplyTo({ id: comment.id, username: comment.profiles?.username || 'Anonymous' })}
-                                                            onReport={() => handleReportClick('comment', comment.id, comment.profiles?.username)}
-                                                        />
-                                                        {childReplies.length > 0 && (
-                                                            <div className="ml-6 pl-4 border-l border-brand-border/40 space-y-2">
-                                                                {childReplies.map((reply: any) => (
-                                                                    <CommentCard 
-                                                                        key={reply.id} 
-                                                                        comment={reply} 
-                                                                        isLeft={true} 
-                                                                        canReply={false}
-                                                                        onReport={() => handleReportClick('comment', reply.id, reply.profiles?.username)}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })
-                                        ) : (
-                                            <p className="text-zinc-600 text-xs italic text-center py-6 font-medium">Belum ada opini untuk kubu ini.</p>
-                                        )}
-                                    </div>
-                                </div>
+                            {/* Unified single list feed */}
+                            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                                {isLoadingComments ? (
+                                    <p className="text-zinc-600 text-xs italic text-center py-6 font-medium">Memuat opini...</p>
+                                ) : (() => {
+                                    const getFilteredParents = () => {
+                                        const allP = [...parentsA, ...parentsB];
+                                        if (commentSectionTab === 'semua') {
+                                            return allP.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                                        }
+                                        if (commentSectionTab === 'a') {
+                                            return parentsA.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                                        }
+                                        if (commentSectionTab === 'b') {
+                                            return parentsB.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                                        }
+                                        if (commentSectionTab === 'terkuat') {
+                                            return allP.sort((a, b) => {
+                                                const pointsA = a.profiles?.points ?? 0;
+                                                const pointsB = b.profiles?.points ?? 0;
+                                                if (pointsB !== pointsA) {
+                                                    return pointsB - pointsA;
+                                                }
+                                                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                                            });
+                                        }
+                                        return [];
+                                    };
 
-                                {/* Column B */}
-                                <div className={`space-y-3 ${commentSectionTab === 'b' ? 'block' : 'hidden md:block'}`}>
-                                    <h4 className="hidden md:flex items-center gap-2 text-xs font-black text-choice-right uppercase tracking-wider border-b border-brand-border/60 pb-2 mb-3">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-choice-right" />
-                                        Alasan memilih {poll.option_b} ({commentsB.length})
-                                    </h4>
-                                    <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
-                                        {isLoadingComments ? (
-                                            <p className="text-zinc-600 text-xs italic text-center py-6 font-medium">Memuat opini...</p>
-                                        ) : parentsB.length > 0 ? (
-                                            parentsB.map((comment: any) => {
-                                                const childReplies = allComments.filter((c: any) => c.parent_id === comment.id);
-                                                return (
-                                                    <div key={comment.id} className="space-y-2">
-                                                        <CommentCard 
-                                                            comment={comment} 
-                                                            isLeft={false} 
-                                                            canReply={!!user && !hasUserCommented}
-                                                            onReply={() => setReplyTo({ id: comment.id, username: comment.profiles?.username || 'Anonymous' })}
-                                                            onReport={() => handleReportClick('comment', comment.id, comment.profiles?.username)}
-                                                        />
-                                                        {childReplies.length > 0 && (
-                                                            <div className="ml-6 pl-4 border-l border-brand-border/40 space-y-2">
-                                                                {childReplies.map((reply: any) => (
-                                                                    <CommentCard 
-                                                                        key={reply.id} 
-                                                                        comment={reply} 
-                                                                        isLeft={false} 
-                                                                        canReply={false}
-                                                                        onReport={() => handleReportClick('comment', reply.id, reply.profiles?.username)}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                    const filteredParents = getFilteredParents();
+
+                                    if (filteredParents.length === 0) {
+                                        return (
+                                            <p className="text-zinc-600 text-xs italic text-center py-6 font-medium">Belum ada opini di tab ini.</p>
+                                        );
+                                    }
+
+                                    return filteredParents.map((comment: any) => {
+                                        const childReplies = allComments.filter((c: any) => c.parent_id === comment.id);
+                                        const commentIsLeft = comment.choice === 'a';
+                                        return (
+                                            <div key={comment.id} className="space-y-2">
+                                                <CommentCard 
+                                                    comment={comment} 
+                                                    poll={poll}
+                                                    isLeft={commentIsLeft} 
+                                                    canReply={!!user && !hasUserCommented}
+                                                    onReply={() => setReplyTo({ id: comment.id, username: comment.profiles?.username || 'Anonymous' })}
+                                                    onReport={() => handleReportClick('comment', comment.id, comment.profiles?.username)}
+                                                    onSupport={() => handleSupportComment(comment.id, comment.user_id)}
+                                                    isSupported={!!supportedComments[comment.id]}
+                                                />
+                                                {childReplies.length > 0 && (
+                                                    <div className="ml-6 pl-4 border-l border-brand-border/40 space-y-2">
+                                                        {childReplies.map((reply: any) => {
+                                                            const replyIsLeft = reply.choice === 'a';
+                                                            return (
+                                                                <CommentCard 
+                                                                    key={reply.id} 
+                                                                    comment={reply} 
+                                                                    poll={poll}
+                                                                    isLeft={replyIsLeft} 
+                                                                    canReply={false}
+                                                                    onReport={() => handleReportClick('comment', reply.id, reply.profiles?.username)}
+                                                                    onSupport={() => handleSupportComment(reply.id, reply.user_id)}
+                                                                    isSupported={!!supportedComments[reply.id]}
+                                                                />
+                                                            );
+                                                        })}
                                                     </div>
-                                                );
-                                            })
-                                        ) : (
-                                            <p className="text-zinc-600 text-xs italic text-center py-6 font-medium">Belum ada opini untuk kubu ini.</p>
-                                        )}
-                                    </div>
-                                </div>
+                                                )}
+                                            </div>
+                                        );
+                                    });
+                                })()}
                             </div>
                         </div>
                     </div>

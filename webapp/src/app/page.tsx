@@ -27,9 +27,19 @@ export default async function Home(props: {
   const supabase = await createSupabaseServerClient();
 
   // Fetch Database Statistics
-  const { count: countPolls } = await supabase
+  let { count: countPolls } = await supabase
     .from('polls')
     .select('*', { count: 'exact', head: true });
+    
+  if (!countPolls || countPolls === 0) {
+    const { seedInitialTopics } = await import('./actions');
+    await seedInitialTopics();
+    
+    const { count: newCount } = await supabase
+      .from('polls')
+      .select('*', { count: 'exact', head: true });
+    countPolls = newCount;
+  }
     
   const { count: countVotes } = await supabase
     .from('votes')
