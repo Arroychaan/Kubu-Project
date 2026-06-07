@@ -495,8 +495,8 @@ export async function toggleOfficialPoll(pollId: string, isOfficial: boolean): P
 
         return {
             success: true,
-            message: isOfficial 
-                ? 'Topik berhasil diatur menjadi Topik Utama!' 
+            message: isOfficial
+                ? 'Topik berhasil diatur menjadi Topik Utama!'
                 : 'Topik berhasil diubah menjadi Topik Komunitas.'
         };
     } catch (error) {
@@ -705,8 +705,8 @@ export async function addComment(pollId: string, text: string, parentId?: string
 
         return {
             success: true,
-            message: filterResult.is_toxic 
-                ? 'Opini diterbitkan, namun dibersihkan (mengandung konten tidak pantas).' 
+            message: filterResult.is_toxic
+                ? 'Opini diterbitkan, namun dibersihkan (mengandung konten tidak pantas).'
                 : 'Opini kamu berhasil diterbitkan!',
             data: filterResult
         };
@@ -913,8 +913,8 @@ export async function seedInitialTopics(): Promise<ActionResponse> {
             {
                 id: 't0000000-0000-0000-0000-000000000001',
                 question: 'Tim bubur diaduk masih punya alasan paling kuat, kamu di kubu mana?',
-                option_a: 'Kubu Diaduk',
-                option_b: 'Kubu Tidak Diaduk',
+                option_a: 'Bubur Diaduk',
+                option_b: 'Bubur Tidak Diaduk',
                 creator_id: 'a0000000-0000-0000-0000-000000000001',
                 comments: [
                     { user_id: 'a0000000-0000-0000-0000-000000000002', choice: 'a', text: 'Kalau diaduk, rasa kuah dan topping lebih rata.' },
@@ -924,8 +924,8 @@ export async function seedInitialTopics(): Promise<ActionResponse> {
             {
                 id: 't0000000-0000-0000-0000-000000000002',
                 question: 'Apakah Android lebih bebas dan worth it daripada iPhone?',
-                option_a: 'Android Bebas',
-                option_b: 'iPhone Stabil',
+                option_a: 'Android',
+                option_b: 'iPhone',
                 creator_id: 'a0000000-0000-0000-0000-000000000002',
                 comments: [
                     { user_id: 'a0000000-0000-0000-0000-000000000001', choice: 'a', text: 'Android lebih bebas pasang aplikasi dan modifikasi tampilan.' },
