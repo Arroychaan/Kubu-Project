@@ -49,6 +49,7 @@ export default function RightPanel() {
         }
     };
 
+    return (
         <div className="space-y-4 text-left">
             {/* 1. Hot Topics Section */}
             <div className="bg-zinc-900/40 border border-brand-border rounded-2xl p-4 space-y-3">
