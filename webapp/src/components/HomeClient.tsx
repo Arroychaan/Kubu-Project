@@ -94,7 +94,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                     <div className={`py-4 text-[15px] font-bold relative ${
                         activeTab === 'panas' ? 'text-white' : 'text-zinc-500 font-medium'
                     }`}>
-                        Terbaru
+                        Topik Panas
                         {activeTab === 'panas' && (
                             <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-blue rounded-t-full" />
                         )}

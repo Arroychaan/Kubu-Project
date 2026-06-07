@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Loader2, Sparkles, Zap } from 'lucide-react';
 import { createPoll } from '@/app/actions';
@@ -20,6 +20,11 @@ export default function CreatePollModal({ onPollCreated }: CreatePollModalProps)
 
     const { user } = useAuthStore();
 
+    useEffect(() => {
+        const handleOpen = () => setIsOpen(true);
+        window.addEventListener('kubu-open-create-modal', handleOpen);
+        return () => window.removeEventListener('kubu-open-create-modal', handleOpen);
+    }, []);
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage(null);

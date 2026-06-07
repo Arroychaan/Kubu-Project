@@ -147,14 +147,14 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                         </button>
                     </div>
                 ) : (
-                    <Link
+                    <a
                         href="/auth/login"
                         className="flex items-center justify-center p-3 xl:py-3.5 xl:px-8 bg-white hover:bg-zinc-200 text-black font-bold rounded-full transition-all cursor-pointer w-12 h-12 xl:w-[225px] xl:h-auto xl:ml-2"
                         title="Masuk"
                     >
                         <span className="hidden xl:inline text-[15px]">Masuk</span>
                         <LogOut className="w-5 h-5 xl:hidden" />
-                    </Link>
+                    </a>
                 )}
             </div>
         </div>

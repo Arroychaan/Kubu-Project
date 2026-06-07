@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { Poll } from '@/types';
 import HomeClient from '@/components/HomeClient';
@@ -97,7 +98,7 @@ export default async function Home(props: {
   let officialPoll: Poll | null = null;
   const { data: officialData } = await supabase
     .from('polls')
-    .select('id, question, option_a, option_b, is_official, created_at, is_featured, is_hidden_from_home, creator:profiles(username, points)')
+    .select('id, question, option_a, option_b, is_official, created_at, creator_id')
     .eq('is_official', true)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -134,24 +135,28 @@ export default async function Home(props: {
 
   // Fetch Community Polls
   const communityPolls: Poll[] = [];
-  let query = supabase
+    let query = supabase
     .from('polls')
-    .select('id, question, option_a, option_b, is_official, created_at, is_featured, is_hidden_from_home, creator:profiles(username, points)')
+    .select('id, question, option_a, option_b, is_official, created_at, creator_id')
     .eq('is_official', false);
 
   if (searchQuery) {
     query = query.ilike('question', `%${searchQuery}%`);
   }
 
-  const { data: communityData } = await query
+  const { data: communityData, error: commError } = await query
     .order('created_at', { ascending: false })
     .limit(30); // fetch more to allow filtering
+
+  if (commError) {
+    console.error("COMMUNITY POLLS ERROR:", commError);
+  }
 
   if (communityData && Array.isArray(communityData) && communityData.length > 0) {
     const polls = communityData as any[];
     
-    // Programmatic filter for hidden polls + curation
-    const filteredPolls = polls.filter(p => p.is_hidden_from_home !== true);
+    // Programmatic filter for hidden polls + curation (fallback)
+    const filteredPolls = polls;
 
     // Fetch stats for all community polls
     const pollIds = filteredPolls.map(p => p.id);
@@ -167,16 +172,14 @@ export default async function Home(props: {
 
     for (const poll of filteredPolls) {
       const stat = allStats.find(s => s.poll_id === poll.id);
-      communityPolls.push({
+        communityPolls.push({
         id: poll.id,
         question: poll.question,
         option_a: poll.option_a,
         option_b: poll.option_b,
         is_official: poll.is_official ?? false,
         created_at: poll.created_at,
-        is_featured: poll.is_featured ?? false,
-        is_hidden_from_home: poll.is_hidden_from_home ?? false,
-        creator: poll.creator,
+        creator: null, // Fallback if no creator data
         stats: {
           count_a: stat?.count_a ?? 0,
           count_b: stat?.count_b ?? 0,
@@ -184,10 +187,8 @@ export default async function Home(props: {
       });
     }
 
-    // Sort: is_featured DESC, created_at DESC
+    // Sort: created_at DESC
     communityPolls.sort((a, b) => {
-      if (a.is_featured && !b.is_featured) return -1;
-      if (!a.is_featured && b.is_featured) return 1;
       return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
     });
   }
