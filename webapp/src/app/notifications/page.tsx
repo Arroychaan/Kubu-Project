@@ -6,6 +6,12 @@ export const metadata: Metadata = {
     description: 'Lihat interaksi terbaru dan aktivitas dari pengguna lain.',
 };
 
+import { Suspense } from 'react';
+
 export default function NotificationsPage() {
-    return <NotificationsClient />;
+    return (
+        <Suspense fallback={null}>
+            <NotificationsClient />
+        </Suspense>
+    );
 }
