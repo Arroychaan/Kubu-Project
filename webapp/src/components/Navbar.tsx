@@ -198,13 +198,13 @@ export default function Navbar() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2.5 group select-none">
-                        <div className="relative w-8 h-8 flex items-center justify-center bg-white border border-brand-border/80 rounded-xl overflow-hidden shrink-0 transition-transform group-hover:scale-[1.03]">
+                        <div className="relative w-8 h-8 flex items-center justify-center shrink-0 transition-transform group-hover:scale-[1.03]">
                             <Image
                                 src="/kubulogo.png"
                                 alt="Kubu Logo"
                                 fill
                                 sizes="32px"
-                                className="object-contain p-1.5"
+                                className="object-contain"
                                 priority
                             />
                         </div>

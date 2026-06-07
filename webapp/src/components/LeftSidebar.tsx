@@ -86,13 +86,13 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
             <div className="space-y-2 xl:space-y-4 w-full xl:w-[250px] flex flex-col items-center xl:items-start pt-2">
                 {/* Logo */}
                 <Link href="/" className="flex items-center justify-center xl:justify-start gap-3 group p-3 hover:bg-zinc-900/50 rounded-full w-fit transition-colors xl:ml-2">
-                    <div className="relative w-8 h-8 flex items-center justify-center bg-white rounded-full overflow-hidden shrink-0">
+                    <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
                         <Image
                             src="/kubulogo.png"
                             alt="Kubu Logo"
                             fill
                             sizes="32px"
-                            className="object-contain p-1.5"
+                            className="object-contain"
                             priority
                         />
                     </div>
