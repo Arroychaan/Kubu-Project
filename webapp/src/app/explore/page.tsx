@@ -6,6 +6,12 @@ export const metadata: Metadata = {
     description: 'Jelajahi topik panas dan temukan pengguna di KUBU.',
 };
 
+import { Suspense } from 'react';
+
 export default function ExplorePage() {
-    return <ExploreClient />;
+    return (
+        <Suspense fallback={null}>
+            <ExploreClient />
+        </Suspense>
+    );
 }
