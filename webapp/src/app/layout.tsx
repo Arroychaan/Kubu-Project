@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import AuthProvider from "@/components/AuthProvider";
 import { Suspense } from "react";
 import ConditionalNavbar from "@/components/ConditionalNavbar";
+import NextTopLoader from 'nextjs-toploader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen`}
       >
         <AuthProvider>
+          <NextTopLoader color="#1d9bf0" showSpinner={false} />
           <ConditionalNavbar>
             <Suspense fallback={<div className="fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl border-b border-brand-border" />}>
               <Navbar />
