@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import PollCard from './PollCard';
 import { Poll } from '@/types';
 import { Flame, Zap } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/useAuthStore';
 import SocialLayout from './SocialLayout';

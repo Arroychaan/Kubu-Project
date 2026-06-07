@@ -1109,6 +1109,50 @@ export async function supportComment(authorId: string): Promise<ActionResponse> 
     }
 }
 
+// ============================================
+// SERVER ACTION: SEARCH PROFILES
+// ============================================
+export async function searchProfiles(searchQuery: string, limit = 20): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        if (!searchQuery.trim()) {
+            return {
+                success: true,
+                message: 'Pencarian kosong.',
+                data: []
+            };
+        }
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, avatar_url, points, is_admin')
+            .ilike('username', `%${searchQuery}%`)
+            .order('points', { ascending: false, nullsFirst: false })
+            .limit(limit);
+
+        if (error) {
+            console.error('Search profiles error:', error);
+            return {
+                success: false,
+                message: 'Gagal mencari pengguna.'
+            };
+        }
+
+        return {
+            success: true,
+            message: 'Pencarian pengguna berhasil.',
+            data: data || []
+        };
+    } catch (error) {
+        console.error('Unexpected searchProfiles error:', error);
+        return {
+            success: false,
+            message: 'Terjadi kesalahan sistem.'
+        };
+    }
+}
+
 
 
 
