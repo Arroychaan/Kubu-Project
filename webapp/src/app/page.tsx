@@ -26,18 +26,75 @@ export default async function Home(props: {
   const searchQuery = searchParams.search || '';
   const supabase = await createSupabaseServerClient();
 
+  // Fetch Database Statistics
+  const { count: countPolls } = await supabase
+    .from('polls')
+    .select('*', { count: 'exact', head: true });
+    
+  const { count: countVotes } = await supabase
+    .from('votes')
+    .select('*', { count: 'exact', head: true });
+
+  const { count: countUsers } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true });
+
+  const stats = {
+    totalPolls: countPolls ?? 0,
+    totalVotes: countVotes ?? 0,
+    totalUsers: countUsers ?? 0
+  };
+
+  // Fetch Recent Activities (votes + comments) for static ticker
+  const { data: recentComments } = await supabase
+    .from('comments')
+    .select('created_at, text, choice, poll:polls(question, option_a, option_b), profile:profiles(username)')
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  const { data: recentVotes } = await supabase
+    .from('votes')
+    .select('created_at, choice, poll:polls(question, option_a, option_b), profile:profiles(username)')
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  const commentActivities = (recentComments ?? []).map((c: any) => ({
+    type: 'comment',
+    created_at: c.created_at,
+    username: c.profile?.username || 'Warga Kubu',
+    choice: c.choice,
+    question: c.poll?.question || 'Topik Opini',
+    option_a: c.poll?.option_a,
+    option_b: c.poll?.option_b,
+    text: c.text
+  }));
+
+  const voteActivities = (recentVotes ?? []).map((v: any) => ({
+    type: 'vote',
+    created_at: v.created_at,
+    username: v.profile?.username || 'Warga Kubu',
+    choice: v.choice,
+    question: v.poll?.question || 'Topik Opini',
+    option_a: v.poll?.option_a,
+    option_b: v.poll?.option_b
+  }));
+
+  const recentActivities = [...commentActivities, ...voteActivities]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
+
   // Fetch Official Poll
   let officialPoll: Poll | null = null;
   const { data: officialData } = await supabase
     .from('polls')
-    .select('id, question, option_a, option_b, is_official, created_at')
+    .select('id, question, option_a, option_b, is_official, created_at, is_featured, is_hidden_from_home, creator:profiles(username, points)')
     .eq('is_official', true)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
 
   if (officialData) {
-    const poll = officialData as RawPoll;
+    const poll = officialData as any;
 
     // Fetch stats for official poll
     const { data: statsData } = await supabase
@@ -46,7 +103,7 @@ export default async function Home(props: {
       .eq('poll_id', poll.id)
       .single();
 
-    const stats = statsData as RawPollStats | null;
+    const pollStats = statsData as RawPollStats | null;
 
     officialPoll = {
       id: poll.id,
@@ -54,9 +111,13 @@ export default async function Home(props: {
       option_a: poll.option_a,
       option_b: poll.option_b,
       is_official: poll.is_official ?? false,
+      created_at: poll.created_at,
+      is_featured: poll.is_featured ?? false,
+      is_hidden_from_home: poll.is_hidden_from_home ?? false,
+      creator: poll.creator,
       stats: {
-        count_a: stats?.count_a ?? 0,
-        count_b: stats?.count_b ?? 0,
+        count_a: pollStats?.count_a ?? 0,
+        count_b: pollStats?.count_b ?? 0,
       },
     };
   }
@@ -65,7 +126,7 @@ export default async function Home(props: {
   const communityPolls: Poll[] = [];
   let query = supabase
     .from('polls')
-    .select('id, question, option_a, option_b, is_official, created_at')
+    .select('id, question, option_a, option_b, is_official, created_at, is_featured, is_hidden_from_home, creator:profiles(username, points)')
     .eq('is_official', false);
 
   if (searchQuery) {
@@ -74,21 +135,27 @@ export default async function Home(props: {
 
   const { data: communityData } = await query
     .order('created_at', { ascending: false })
-    .limit(10);
+    .limit(30); // fetch more to allow filtering
 
   if (communityData && Array.isArray(communityData) && communityData.length > 0) {
-    const polls = communityData as RawPoll[];
+    const polls = communityData as any[];
+    
+    // Programmatic filter for hidden polls + curation
+    const filteredPolls = polls.filter(p => p.is_hidden_from_home !== true);
 
     // Fetch stats for all community polls
-    const pollIds = polls.map(p => p.id);
-    const { data: allStatsData } = await supabase
-      .from('poll_stats')
-      .select('poll_id, count_a, count_b')
-      .in('poll_id', pollIds);
+    const pollIds = filteredPolls.map(p => p.id);
+    
+    let allStats: RawPollStats[] = [];
+    if (pollIds.length > 0) {
+      const { data: allStatsData } = await supabase
+        .from('poll_stats')
+        .select('poll_id, count_a, count_b')
+        .in('poll_id', pollIds);
+      allStats = (allStatsData ?? []) as RawPollStats[];
+    }
 
-    const allStats = (allStatsData ?? []) as RawPollStats[];
-
-    for (const poll of polls) {
+    for (const poll of filteredPolls) {
       const stat = allStats.find(s => s.poll_id === poll.id);
       communityPolls.push({
         id: poll.id,
@@ -96,12 +163,23 @@ export default async function Home(props: {
         option_a: poll.option_a,
         option_b: poll.option_b,
         is_official: poll.is_official ?? false,
+        created_at: poll.created_at,
+        is_featured: poll.is_featured ?? false,
+        is_hidden_from_home: poll.is_hidden_from_home ?? false,
+        creator: poll.creator,
         stats: {
           count_a: stat?.count_a ?? 0,
           count_b: stat?.count_b ?? 0,
         },
       });
     }
+
+    // Sort: is_featured DESC, created_at DESC
+    communityPolls.sort((a, b) => {
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+    });
   }
 
   return (
@@ -123,8 +201,13 @@ export default async function Home(props: {
       />
 
       {/* Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <HomeClient officialPoll={officialPoll} communityPolls={communityPolls} />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-10">
+        <HomeClient 
+          officialPoll={officialPoll} 
+          communityPolls={communityPolls} 
+          stats={stats}
+          recentActivities={recentActivities}
+        />
       </div>
     </main>
   );

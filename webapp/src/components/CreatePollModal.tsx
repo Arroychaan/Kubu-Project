@@ -25,7 +25,7 @@ export default function CreatePollModal({ onPollCreated }: CreatePollModalProps)
         setMessage(null);
 
         if (!user) {
-            setMessage({ type: 'error', text: 'Silakan masuk ke akun Anda terlebih dahulu untuk membuat polling.' });
+            setMessage({ type: 'error', text: 'Silakan masuk ke akun kamu terlebih dahulu untuk membuat topik baru.' });
             return;
         }
 
@@ -94,8 +94,8 @@ export default function CreatePollModal({ onPollCreated }: CreatePollModalProps)
                                         <Zap className="w-5 h-5 text-brand-blue" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-black text-white">Buat Jajak Pendapat</h2>
-                                        <p className="text-xs text-slate-500 font-semibold">Ajukan topik voting baru ke publik</p>
+                                        <h2 className="text-lg font-black text-white">Buat Topik Baru</h2>
+                                        <p className="text-xs text-slate-500 font-semibold">Ajukan topik diskusi baru ke publik</p>
                                     </div>
                                 </div>
                             </div>
@@ -110,7 +110,7 @@ export default function CreatePollModal({ onPollCreated }: CreatePollModalProps)
                                     <textarea
                                         value={question}
                                         onChange={(e) => setQuestion(e.target.value)}
-                                        placeholder="Tulis topik diskusi/pertanyaan Anda disini..."
+                                        placeholder="Tulis topik diskusi/pertanyaan kamu di sini..."
                                         rows={3}
                                         maxLength={200}
                                         className="w-full px-4 py-3 bg-background border border-brand-border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-blue/50 focus:ring-1 focus:ring-brand-blue/20 transition-all resize-none text-sm font-medium"
@@ -182,14 +182,14 @@ export default function CreatePollModal({ onPollCreated }: CreatePollModalProps)
                                     ) : (
                                         <>
                                             <Sparkles className="w-4.5 h-4.5" />
-                                            <span>Terbitkan Polling</span>
+                                            <span>Terbitkan Topik</span>
                                         </>
                                     )}
                                 </button>
 
                                 {!user && (
                                     <p className="text-center text-xs text-slate-500 font-semibold">
-                                        Anda harus <a href="/auth/login" className="text-brand-blue hover:underline">masuk</a> untuk membuat polling baru.
+                                        Kamu harus <a href="/auth/login" className="text-brand-blue hover:underline">masuk</a> untuk membuat topik baru.
                                     </p>
                                 )}
                             </form>

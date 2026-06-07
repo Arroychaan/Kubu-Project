@@ -2,12 +2,31 @@
 
 import { useState, useTransition, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import KubuBar from './BattleBar';
+import ChoiceBar from './ChoiceBar';
 import { vote, checkUserVote, getComments, addComment, reportContent } from '@/app/actions';
 import { Poll } from '@/types';
 import { useAuthStore } from '@/store/useAuthStore';
 import { MessageCircle, Share2, Info, Flag, AlertTriangle, X } from 'lucide-react';
 import { getUserTitle } from './LeaderboardClient';
+
+const formatTime = (dateStr: string) => {
+    try {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffMins < 1) return 'Baru saja';
+        if (diffMins < 60) return `${diffMins}m yang lalu`;
+        if (diffHours < 24) return `${diffHours}j yang lalu`;
+        if (diffDays < 7) return `${diffDays}h yang lalu`;
+        return date.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+    } catch {
+        return 'Baru saja';
+    }
+};
 
 function CommentCard({ 
     comment, 
@@ -157,9 +176,7 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
     };
 
     useEffect(() => {
-        if (hasVoted) {
-            fetchPollComments();
-        }
+        fetchPollComments();
     }, [poll.id, hasVoted]);
 
     const handleSendComment = async (e: React.FormEvent) => {
@@ -184,7 +201,7 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
 
     const handleVote = (choice: 'a' | 'b') => {
         if (!user) {
-            setMessage({ type: 'error', text: 'Silakan masuk terlebih dahulu untuk berpartisipasi dalam jajak pendapat.' });
+            setMessage({ type: 'error', text: 'Silakan masuk terlebih dahulu untuk ikut berpendapat.' });
             setTimeout(() => setMessage(null), 4000);
             return;
         }
@@ -209,7 +226,7 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                 setMessage({ type: 'error', text: result.message });
                 setTimeout(() => setMessage(null), 4000);
             } else {
-                setMessage({ type: 'success', text: 'Pilihan Anda berhasil disimpan!' });
+                setMessage({ type: 'success', text: 'Pilihan kamu berhasil disimpan!' });
                 setTimeout(() => setMessage(null), 3000);
             }
         });
@@ -232,6 +249,14 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
 
     const total = countA + countB;
 
+    const creatorName = poll.creator?.username || '@pengguna_kubu';
+    const creatorPoints = poll.creator?.points ?? 50;
+    const creatorTitleInfo = getUserTitle(creatorPoints);
+    const formattedTime = poll.created_at ? formatTime(poll.created_at) : 'Baru saja';
+
+    const topCommentA = commentsA.find(c => !c.parent_id);
+    const topCommentB = commentsB.find(c => !c.parent_id);
+
     return (
         <motion.div
             id={`poll-${poll.id}`}
@@ -242,14 +267,34 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                 isHero ? 'p-6 md:p-8 border-brand-blue/35' : 'p-5 md:p-6'
             }`}
         >
-            {/* Header */}
+            {/* Header Kreator */}
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-brand-border/40 select-none">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-brand-border/80 flex items-center justify-center text-xs font-black text-zinc-400 uppercase">
+                        {creatorName[0] || 'P'}
+                    </div>
+                    <div className="flex flex-col text-left">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-bold text-white leading-none">{creatorName}</span>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 border rounded-[3px] text-[7px] font-black uppercase tracking-wider ${creatorTitleInfo.color}`}>
+                                {creatorTitleInfo.name}
+                            </span>
+                        </div>
+                        <span className="text-[9px] text-zinc-500 font-semibold mt-1">
+                            {formattedTime}
+                        </span>
+                    </div>
+                </div>
+                {poll.is_official && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-blue/5 border border-brand-blue/20 text-brand-blue text-[9px] font-black rounded uppercase tracking-wider">
+                        ⚡ Pilihan Resmi
+                    </span>
+                )}
+            </div>
+
+            {/* Question */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                    {poll.is_official && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-brand-blue/5 border border-brand-blue/20 text-brand-blue text-[9px] font-black rounded-md uppercase tracking-wider mb-3 select-none">
-                            ⚡ Polling Resmi
-                        </span>
-                    )}
                     <h3 className={`font-bold text-white leading-snug tracking-tight ${
                         isHero ? 'text-lg md:text-xl font-black' : 'text-sm md:text-base'
                     }`}>
@@ -258,20 +303,65 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                 </div>
             </div>
 
-            {/* Battle Bar comparison */}
+            {/* Choice Bar comparison */}
             <div className={isHero ? 'my-6' : 'my-4'}>
-                <KubuBar
+                <ChoiceBar
                     countA={countA}
                     countB={countB}
-                    colorA="bg-choice-left"
-                    colorB="bg-choice-right"
                     onVote={handleVote}
                     hasVoted={hasVoted}
                     labelA={poll.option_a}
                     labelB={poll.option_b}
-                    className={isHero ? 'h-32 md:h-40' : ''}
+                    className={isHero ? 'h-28 sm:h-32' : ''}
                 />
             </div>
+
+            {/* Pratinjau Argumen Sebelum Vote (Hanya tampil jika ada opini) */}
+            {!hasVoted && (topCommentA || topCommentB) && (
+                <div className="mt-4 p-3 bg-zinc-950/30 border border-brand-border/60 rounded-xl space-y-2.5">
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-1">
+                        Opini Warga Terkini
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {topCommentA && (
+                            <div className="p-2.5 bg-zinc-950/40 border border-choice-left/10 rounded-lg text-left">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <div className="w-4 h-4 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-400 uppercase">
+                                        {(topCommentA.profiles?.username || 'U')[0]}
+                                    </div>
+                                    <span className="text-[9px] text-zinc-400 font-bold truncate max-w-[80px]">
+                                        @{topCommentA.profiles?.username || 'pengguna'}
+                                    </span>
+                                    <span className="text-[8px] text-choice-left bg-choice-left/5 px-1 rounded uppercase tracking-wider font-extrabold">
+                                        Pilih {poll.option_a}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-zinc-300 font-medium line-clamp-2 leading-relaxed">
+                                    "{topCommentA.is_toxic ? '🤡' : topCommentA.text}"
+                                </p>
+                            </div>
+                        )}
+                        {topCommentB && (
+                            <div className="p-2.5 bg-zinc-950/40 border border-choice-right/10 rounded-lg text-left">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <div className="w-4 h-4 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-400 uppercase">
+                                        {(topCommentB.profiles?.username || 'U')[0]}
+                                    </div>
+                                    <span className="text-[9px] text-zinc-400 font-bold truncate max-w-[80px]">
+                                        @{topCommentB.profiles?.username || 'pengguna'}
+                                    </span>
+                                    <span className="text-[8px] text-choice-right bg-choice-right/5 px-1 rounded uppercase tracking-wider font-extrabold">
+                                        Pilih {poll.option_b}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-zinc-300 font-medium line-clamp-2 leading-relaxed">
+                                    "{topCommentB.is_toxic ? '🤡' : topCommentB.text}"
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Toast feedback inside card */}
             {message && (
@@ -384,7 +474,7 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                             </form>
                         ) : (
                             <div className="mb-6 p-3 bg-zinc-950/20 border border-brand-border/60 rounded-xl text-center text-[10px] text-zinc-400 font-bold uppercase tracking-wider select-none">
-                                Terima kasih telah memberikan opini Anda pada jajak pendapat ini!
+                                Terima kasih telah menyuarakan opini kamu di topik ini!
                             </div>
                         )}
 
@@ -534,7 +624,7 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                             </div>
                             
                             <p className="text-xs text-zinc-400 mb-6">
-                                Anda melaporkan {reportTarget.type === 'poll' ? 'polling' : 'opini'} ini karena melanggar aturan komunitas. Pilih alasan yang paling sesuai.
+                                Kamu melaporkan {reportTarget.type === 'poll' ? 'topik' : 'opini'} ini karena melanggar aturan komunitas. Pilih alasan yang paling sesuai.
                             </p>
                             
                             <form onSubmit={async (e) => {

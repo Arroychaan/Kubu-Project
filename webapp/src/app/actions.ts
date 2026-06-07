@@ -51,7 +51,7 @@ export async function vote(pollId: string, choice: 'a' | 'b'): Promise<ActionRes
         if (authError || !user) {
             return {
                 success: false,
-                message: 'Anda harus masuk terlebih dahulu untuk memberikan suara.'
+                message: 'Kamu harus masuk terlebih dahulu untuk memberikan suara.'
             };
         }
 
@@ -70,7 +70,7 @@ export async function vote(pollId: string, choice: 'a' | 'b'): Promise<ActionRes
             if (voteError.code === '23505') {
                 return {
                     success: false,
-                    message: 'Anda sudah memberikan suara pada polling ini.'
+                    message: 'Kamu sudah memberikan suara pada topik ini.'
                 };
             }
 
@@ -118,7 +118,7 @@ export async function createPoll(
         if (authError || !user) {
             return {
                 success: false,
-                message: 'Anda harus masuk terlebih dahulu untuk membuat polling.'
+                message: 'Kamu harus masuk terlebih dahulu untuk membuat topik baru.'
             };
         }
 
@@ -169,7 +169,7 @@ export async function createPoll(
                 console.error('Profile fetch error:', profileError);
                 return {
                     success: false,
-                    message: 'Tidak dapat memverifikasi akun Anda. Silakan coba lagi.'
+                    message: 'Tidak dapat memverifikasi akun kamu. Silakan coba lagi.'
                 };
             }
 
@@ -187,7 +187,7 @@ export async function createPoll(
                 console.error('Profile insert error:', profileInsertError);
                 return {
                     success: false,
-                    message: 'Tidak dapat membuat profil Anda. Silakan coba lagi.'
+                    message: 'Tidak dapat membuat profil kamu. Silakan coba lagi.'
                 };
             }
 
@@ -211,7 +211,7 @@ export async function createPoll(
         if (lastPostDate === today && dailyCount >= dailyLimit) {
             return {
                 success: false,
-                message: `Batas harian tercapai! Anda hanya dapat membuat ${dailyLimit} polling per hari. Coba lagi besok.`
+                message: `Batas harian tercapai! Kamu hanya dapat membuat ${dailyLimit} topik per hari. Coba lagi besok.`
             };
         }
 
@@ -436,7 +436,7 @@ export async function checkUserVote(pollId: string): Promise<ActionResponse> {
             console.error('Vote lookup error:', voteError);
             return {
                 success: false,
-                message: 'Gagal memeriksa suara Anda.'
+                message: 'Gagal memeriksa suara kamu.'
             };
         }
 
@@ -444,7 +444,7 @@ export async function checkUserVote(pollId: string): Promise<ActionResponse> {
 
         return {
             success: true,
-            message: vote ? 'Anda sudah memberikan suara.' : 'Anda belum memberikan suara.',
+            message: vote ? 'Kamu sudah memberikan suara.' : 'Kamu belum memberikan suara.',
             data: {
                 hasVoted: !!vote,
                 choice: vote?.choice || null
@@ -646,7 +646,7 @@ export async function addComment(pollId: string, text: string, parentId?: string
         if (authError || !user) {
             return {
                 success: false,
-                message: 'Anda harus masuk terlebih dahulu untuk mengirim opini.'
+                message: 'Kamu harus masuk terlebih dahulu untuk mengirim opini.'
             };
         }
 
@@ -677,7 +677,7 @@ export async function addComment(pollId: string, text: string, parentId?: string
         if (voteError || !voteData) {
             return {
                 success: false,
-                message: 'Anda harus memberikan pilihan kubu terlebih dahulu sebelum menulis alasan.'
+                message: 'Kamu harus memberikan pilihan kubu terlebih dahulu sebelum menulis alasan.'
             };
         }
 
@@ -707,7 +707,7 @@ export async function addComment(pollId: string, text: string, parentId?: string
             success: true,
             message: filterResult.is_toxic 
                 ? 'Opini diterbitkan, namun dibersihkan (mengandung konten tidak pantas).' 
-                : 'Opini Anda berhasil diterbitkan!',
+                : 'Opini kamu berhasil diterbitkan!',
             data: filterResult
         };
 
@@ -717,7 +717,7 @@ export async function addComment(pollId: string, text: string, parentId?: string
         if (error?.message?.includes('comments_poll_user_unique') || (error?.code === '23505')) {
             return {
                 success: false,
-                message: 'Anda hanya dapat mengirim satu alasan utama per jajak pendapat.'
+                message: 'Kamu hanya dapat mengirim satu alasan utama per topik ini.'
             };
         }
         return {

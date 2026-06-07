@@ -187,6 +187,13 @@ export interface Poll {
     option_a: string;
     option_b: string;
     is_official: boolean;
+    created_at?: string;
+    is_featured?: boolean;
+    is_hidden_from_home?: boolean;
+    creator?: {
+        username: string | null;
+        points: number | null;
+    } | null;
     stats?: {
         count_a: number;
         count_b: number;
