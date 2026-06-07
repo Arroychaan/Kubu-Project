@@ -1187,5 +1187,168 @@ export async function getUnreadNotificationCount(): Promise<ActionResponse> {
     }
 }
 
+// ============================================
+// PROFILE & FOLLOWS ACTIONS
+// ============================================
+
+export async function followUser(targetUserId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: false, message: 'Harap masuk terlebih dahulu.' };
+        }
+
+        if (user.id === targetUserId) {
+            return { success: false, message: 'Tidak dapat mengikuti diri sendiri.' };
+        }
+
+        const { error } = await supabase
+            .from('follows')
+            .insert({ follower_id: user.id, following_id: targetUserId });
+
+        if (error) {
+            console.error('Follow error:', error);
+            if (error.code === '23505') { // Unique violation
+                return { success: false, message: 'Anda sudah mengikuti pengguna ini.' };
+            }
+            return { success: false, message: 'Gagal mengikuti pengguna.' };
+        }
+
+        return { success: true, message: 'Berhasil mengikuti pengguna.' };
+    } catch (error) {
+        console.error('Unexpected followUser error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+export async function unfollowUser(targetUserId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: false, message: 'Harap masuk terlebih dahulu.' };
+        }
+
+        const { error } = await supabase
+            .from('follows')
+            .delete()
+            .eq('follower_id', user.id)
+            .eq('following_id', targetUserId);
+
+        if (error) {
+            console.error('Unfollow error:', error);
+            return { success: false, message: 'Gagal berhenti mengikuti pengguna.' };
+        }
+
+        return { success: true, message: 'Berhasil berhenti mengikuti pengguna.' };
+    } catch (error) {
+        console.error('Unexpected unfollowUser error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+export async function checkIsFollowing(targetUserId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return { success: true, message: 'Status follow gagal diperiksa.', data: false };
+        }
+
+        const { count, error } = await supabase
+            .from('follows')
+            .select('*', { count: 'exact', head: true })
+            .eq('follower_id', user.id)
+            .eq('following_id', targetUserId);
+
+        if (error) {
+            console.error('Check is following error:', error);
+            return { success: false, message: 'Gagal memeriksa status follow.' };
+        }
+
+        return { success: true, message: 'Berhasil memuat status follow.', data: (count || 0) > 0 };
+    } catch (error) {
+        console.error('Unexpected checkIsFollowing error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+export async function getFollowStats(userId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        const { count: followersCount } = await supabase
+            .from('follows')
+            .select('*', { count: 'exact', head: true })
+            .eq('following_id', userId);
+
+        const { count: followingCount } = await supabase
+            .from('follows')
+            .select('*', { count: 'exact', head: true })
+            .eq('follower_id', userId);
+
+        return { 
+            success: true, 
+            message: 'Berhasil memuat stat follow.',
+            data: { 
+                followers: followersCount || 0, 
+                following: followingCount || 0 
+            } 
+        };
+    } catch (error) {
+        console.error('Unexpected getFollowStats error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+export async function getUserComments(userId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        const { data, error } = await supabase
+            .from('comments')
+            .select('id, content, created_at, poll:polls(id, question)')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) {
+            console.error('getUserComments error:', error);
+            return { success: false, message: 'Gagal memuat argumen pengguna.' };
+        }
+
+        return { success: true, message: 'Berhasil memuat argumen pengguna.', data: data || [] };
+    } catch (error) {
+        console.error('Unexpected getUserComments error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
+
+export async function getUserVotes(userId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createSupabaseServerClient();
+
+        const { data, error } = await supabase
+            .from('votes')
+            .select('choice, created_at, poll:polls(id, question)')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) {
+            console.error('getUserVotes error:', error);
+            return { success: false, message: 'Gagal memuat riwayat suara pengguna.' };
+        }
+
+        return { success: true, message: 'Berhasil memuat riwayat suara pengguna.', data: data || [] };
+    } catch (error) {
+        console.error('Unexpected getUserVotes error:', error);
+        return { success: false, message: 'Terjadi kesalahan sistem.' };
+    }
+}
 
 
