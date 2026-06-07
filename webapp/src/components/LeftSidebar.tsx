@@ -55,10 +55,10 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
     const titleInfo = profile ? getUserTitle(profile.points ?? 50) : null;
 
     return (
-        <div className="flex flex-col h-full justify-between select-none">
-            <div className="space-y-4">
+        <div className="flex flex-col h-full justify-between select-none items-end xl:items-start">
+            <div className="space-y-2 xl:space-y-4 w-full xl:w-[250px] flex flex-col items-center xl:items-start pt-2">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-3 group px-4 py-2 hover:bg-zinc-900/50 rounded-full w-fit transition-colors">
+                <Link href="/" className="flex items-center justify-center xl:justify-start gap-3 group p-3 hover:bg-zinc-900/50 rounded-full w-fit transition-colors xl:ml-2">
                     <div className="relative w-8 h-8 flex items-center justify-center bg-white rounded-full overflow-hidden shrink-0">
                         <Image
                             src="/logo.png"
@@ -72,21 +72,22 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                 </Link>
 
                 {/* Nav Links */}
-                <nav className="space-y-1 mt-2">
+                <nav className="space-y-1 mt-2 w-full flex flex-col items-center xl:items-start">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         return (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className={`flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-200 w-fit group ${
+                                className={`flex items-center gap-4 p-3 xl:px-4 xl:py-3 rounded-full transition-all duration-200 w-fit group ${
                                     item.active
                                         ? 'font-bold text-white'
                                         : 'font-normal text-zinc-300 hover:bg-zinc-900/60'
                                 }`}
+                                title={item.name}
                             >
-                                <Icon className={`w-6 h-6 ${item.active ? 'text-white' : 'text-zinc-300 group-hover:text-white'}`} strokeWidth={item.active ? 2.5 : 2} />
-                                <span className="text-xl pr-4">{item.name}</span>
+                                <Icon className={`w-7 h-7 ${item.active ? 'text-white' : 'text-zinc-300 group-hover:text-white'}`} strokeWidth={item.active ? 2.5 : 2} />
+                                <span className="hidden xl:inline text-xl pr-4">{item.name}</span>
                             </Link>
                         );
                     })}
@@ -94,12 +95,13 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                     {profile?.is_admin && (
                         <Link
                             href="/admin"
-                            className={`flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-200 w-fit group ${
+                            className={`flex items-center gap-4 p-3 xl:px-4 xl:py-3 rounded-full transition-all duration-200 w-fit group ${
                                 pathname === '/admin' ? 'font-bold text-white' : 'font-normal text-zinc-300 hover:bg-zinc-900/60'
                             }`}
+                            title="Admin Panel"
                         >
-                            <Shield className="w-6 h-6 text-brand-blue" />
-                            <span className="text-xl pr-4">Admin Panel</span>
+                            <Shield className="w-7 h-7 text-brand-blue" />
+                            <span className="hidden xl:inline text-xl pr-4">Admin Panel</span>
                         </Link>
                     )}
                 </nav>
@@ -110,33 +112,35 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                         onClick={() => {
                             window.dispatchEvent(new CustomEvent('kubu-open-create-modal'));
                         }}
-                        className="w-[90%] mt-4 flex items-center justify-center gap-2 py-3.5 bg-brand-blue hover:bg-[#1a8cd8] active:scale-[0.98] text-white font-bold rounded-full transition-all text-[15px] cursor-pointer"
+                        className="mt-4 flex items-center justify-center p-3 xl:py-3.5 xl:px-8 bg-brand-blue hover:bg-[#1a8cd8] active:scale-[0.98] text-white font-bold rounded-full transition-all cursor-pointer w-12 h-12 xl:w-[225px] xl:h-auto xl:ml-2"
+                        title="Lempar Topik"
                     >
-                        <span>Lempar Topik</span>
+                        <span className="hidden xl:inline text-[17px]">Lempar Topik</span>
+                        <Plus className="w-6 h-6 xl:hidden stroke-[2.5]" />
                     </button>
                 )}
             </div>
 
             {/* Profile Info */}
-            <div className="pt-4 mb-4">
+            <div className="pt-4 mb-4 w-full flex justify-center xl:justify-start">
                 {user && profile ? (
-                    <div className="flex items-center justify-between p-3 rounded-full hover:bg-zinc-900/60 transition-all cursor-pointer group">
+                    <div className="flex items-center justify-center xl:justify-between p-2 xl:p-3 rounded-full hover:bg-zinc-900/60 transition-all cursor-pointer group w-fit xl:w-[240px]">
                         <Link href="/profile" className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-white shrink-0">
                                 {profile.username?.[0]?.toUpperCase() || 'U'}
                             </div>
-                            <div className="flex-1 min-w-0 text-left">
-                                <span className="block text-sm font-bold text-white truncate leading-tight">
+                            <div className="hidden xl:block flex-1 min-w-0 text-left">
+                                <span className="block text-[15px] font-bold text-white truncate leading-tight">
                                     {profile.username || 'User'}
                                 </span>
-                                <span className="block text-[13px] text-zinc-500 truncate leading-tight">
+                                <span className="block text-[15px] text-zinc-500 truncate leading-tight">
                                     @{profile.username || 'user'}
                                 </span>
                             </div>
                         </Link>
                         <button
                             onClick={handleSignOut}
-                            className="p-2 text-zinc-500 hover:text-white rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
+                            className="hidden xl:block p-2 text-zinc-500 hover:text-white rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Keluar"
                         >
                             <LogOut className="w-4 h-4" />
@@ -145,9 +149,11 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                 ) : (
                     <Link
                         href="/auth/login"
-                        className="flex items-center justify-center w-[90%] py-3.5 bg-white hover:bg-zinc-200 text-black font-bold text-[15px] rounded-full transition-all cursor-pointer"
+                        className="flex items-center justify-center p-3 xl:py-3.5 xl:px-8 bg-white hover:bg-zinc-200 text-black font-bold rounded-full transition-all cursor-pointer w-12 h-12 xl:w-[225px] xl:h-auto xl:ml-2"
+                        title="Masuk"
                     >
-                        <span>Masuk</span>
+                        <span className="hidden xl:inline text-[15px]">Masuk</span>
+                        <LogOut className="w-5 h-5 xl:hidden" />
                     </Link>
                 )}
             </div>

@@ -52,7 +52,7 @@ export default function RightPanel() {
     return (
         <div className="space-y-4 text-left">
             {/* 1. Hot Topics Section */}
-            <div className="bg-zinc-900/40 border border-brand-border rounded-2xl p-4 space-y-3">
+            <div className="bg-zinc-900/50 rounded-2xl p-4 space-y-3">
                 <h3 className="font-bold text-lg text-white">Sedang Tren</h3>
 
                 <div className="space-y-4">
@@ -90,7 +90,7 @@ export default function RightPanel() {
 
             {/* 2. Leading Sides Section */}
             {hotTopics.length > 0 && (
-                <div className="bg-zinc-900/40 border border-brand-border rounded-2xl p-4 space-y-3">
+                <div className="bg-zinc-900/50 rounded-2xl p-4 space-y-3">
                     <h3 className="font-bold text-lg text-white">Posisi Teratas</h3>
 
                     <div className="space-y-4">
@@ -136,7 +136,7 @@ export default function RightPanel() {
             )}
 
             {/* 3. Influential Users Section */}
-            <div className="bg-zinc-900/40 border border-brand-border rounded-2xl p-4 space-y-3">
+            <div className="bg-zinc-900/50 rounded-2xl p-4 space-y-3">
                 <h3 className="font-bold text-lg text-white">Pengguna Berpengaruh</h3>
 
                 <div className="space-y-4">

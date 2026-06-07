@@ -64,38 +64,15 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                 <OnboardingWizard userId={user.id} onComplete={() => setShowOnboarding(false)} />
             )}
 
-            {/* Short & Sharp Hero Section */}
-            <section className="px-4 py-4 md:px-6 md:py-6 text-left border-b border-brand-border bg-background">
-                <div className="space-y-2 max-w-2xl text-left">
-                    <h1 className="text-xl md:text-2xl font-bold text-white">
-                        Pilih sisi. Bela opinimu.
-                    </h1>
-                    <p className="text-zinc-500 text-[15px]">
-                        KUBU adalah tempat kamu ikut topik yang lagi ramai, memilih kubu, lalu melihat argumen mana yang paling kuat.
-                    </p>
-                    <div className="pt-2">
-                        <button
-                            onClick={() => {
-                                const element = document.getElementById('opinion-feed');
-                                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }}
-                            className="px-5 py-2 bg-white hover:bg-zinc-200 text-black font-bold rounded-full transition-colors text-[15px]"
-                        >
-                            Pilih Kubumu
-                        </button>
-                    </div>
-                </div>
-            </section>
-
             {/* Custom Tabs (Untuk Kamu & Terbaru) */}
-            <div className="flex w-full border-b border-brand-border">
+            <div className="flex w-full border-b border-brand-border sticky top-0 bg-background/80 backdrop-blur-md z-20">
                 <button
                     onClick={() => {
                         const params = new URLSearchParams(searchParams.toString());
                         params.delete('tab');
                         router.push(`/?${params.toString()}`);
                     }}
-                    className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors"
+                    className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors cursor-pointer"
                 >
                     <div className={`py-4 text-[15px] font-bold relative ${
                         activeTab === 'terbaru' ? 'text-white' : 'text-zinc-500 font-medium'
@@ -112,7 +89,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                         params.set('tab', 'panas');
                         router.push(`/?${params.toString()}`);
                     }}
-                    className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors"
+                    className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors cursor-pointer"
                 >
                     <div className={`py-4 text-[15px] font-bold relative ${
                         activeTab === 'panas' ? 'text-white' : 'text-zinc-500 font-medium'
@@ -124,6 +101,30 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                     </div>
                 </button>
             </div>
+
+            {/* Short & Sharp Hero Section (Shown below tabs) */}
+            <section className="px-4 py-4 md:px-6 md:py-6 text-left border-b border-brand-border bg-background">
+                <div className="space-y-2 max-w-2xl text-left">
+                    <h1 className="text-xl md:text-2xl font-bold text-white">
+                        Pilih sisi. Bela opinimu.
+                    </h1>
+                    <p className="text-zinc-500 text-[15px]">
+                        KUBU adalah tempat kamu ikut topik yang lagi ramai, memilih kubu, lalu melihat argumen mana yang paling kuat.
+                    </p>
+                    <div className="pt-2">
+                        <button
+                            onClick={() => {
+                                const element = document.getElementById('opinion-feed');
+                                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}
+                            className="px-5 py-2 bg-white hover:bg-zinc-200 text-black font-bold rounded-full transition-colors text-[15px] cursor-pointer"
+                        >
+                            Pilih Kubumu
+                        </button>
+                    </div>
+                </div>
+            </section>
+
 
             {/* Feed List */}
             <div id="opinion-feed" className="space-y-6 scroll-mt-6">

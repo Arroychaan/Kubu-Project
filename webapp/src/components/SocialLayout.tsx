@@ -24,20 +24,23 @@ export default function SocialLayout({ children, activeTab = 'beranda' }: Social
 
 
             {/* Container for content */}
-            <div className="max-w-[1200px] mx-auto w-full flex-1 flex md:gap-6 px-0 md:px-6 relative items-start">
+            <div className="w-full flex-1 flex justify-center relative items-start">
                 
                 {/* 1. Left Navigation Sidebar (Desktop only) */}
-                <aside className="hidden md:block w-[240px] shrink-0 sticky top-0 h-screen py-6 border-r border-brand-border/40 pr-4">
-                    <LeftSidebar activeTab={activeTab} />
-                </aside>
+                {/* On very large screens, flex-grow pushes it to center, but we can just use a fixed max-width container */}
+                <header className="hidden md:flex w-[88px] xl:w-[275px] shrink-0 sticky top-0 h-screen justify-end">
+                    <div className="w-[88px] xl:w-[275px] h-full flex flex-col">
+                        <LeftSidebar activeTab={activeTab} />
+                    </div>
+                </header>
 
                 {/* 2. Middle Main Feed Column */}
-                <main className="flex-1 max-w-[660px] w-full min-w-0 pt-16 md:pt-6 pb-24 md:pb-6 mx-auto border-x-0 md:border-x border-brand-border/40 min-h-screen">
+                <main className="w-full max-w-[600px] shrink-0 min-w-0 pt-16 md:pt-0 pb-24 md:pb-6 border-x-0 md:border-x border-brand-border min-h-screen">
                     {children}
                 </main>
 
                 {/* 3. Right Panel Sidebar (Desktop/Tablet only, lg breakpoint) */}
-                <aside className="hidden lg:block w-[300px] shrink-0 sticky top-0 h-screen py-6 border-l border-brand-border/40 pl-6">
+                <aside className="hidden lg:block w-[350px] shrink-0 sticky top-0 h-screen py-2 pl-8">
                     <RightPanel />
                 </aside>
                 
