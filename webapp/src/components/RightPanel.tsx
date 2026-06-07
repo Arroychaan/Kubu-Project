@@ -187,7 +187,7 @@ export default function RightPanel() {
             <div className="flex flex-wrap gap-x-3 gap-y-1 px-4 py-2 text-[13px] text-zinc-500 font-medium">
                 <a href="#" className="hover:underline">Kebijakan Pengguna |</a>
                 <a href="#" className="hover:underline">Privasi Pengguna |</a>
-                <a href="#" className="hover:underline">Tentang</a>
+                <a href="#" className="hover:underline">Tentang |</a>
                 <span>© 2026 Kubu.</span>
             </div>
         </div>

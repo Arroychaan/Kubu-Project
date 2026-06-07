@@ -200,7 +200,7 @@ export default function Navbar() {
                     <Link href="/" className="flex items-center gap-2.5 group select-none">
                         <div className="relative w-8 h-8 flex items-center justify-center bg-white border border-brand-border/80 rounded-xl overflow-hidden shrink-0 transition-transform group-hover:scale-[1.03]">
                             <Image
-                                src="/logo.png"
+                                src="/kubulogo.png"
                                 alt="Kubu Logo"
                                 fill
                                 sizes="32px"

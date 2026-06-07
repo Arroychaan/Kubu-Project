@@ -88,7 +88,7 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                 <Link href="/" className="flex items-center justify-center xl:justify-start gap-3 group p-3 hover:bg-zinc-900/50 rounded-full w-fit transition-colors xl:ml-2">
                     <div className="relative w-8 h-8 flex items-center justify-center bg-white rounded-full overflow-hidden shrink-0">
                         <Image
-                            src="/logo.png"
+                            src="/kubulogo.png"
                             alt="Kubu Logo"
                             fill
                             sizes="32px"
