@@ -57,8 +57,26 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
           })
         : communityPolls;
 
+    const [isPending, startTransition] = useTransition();
+    const [optimisticTab, setOptimisticTab] = useState(activeTab);
+
+    useEffect(() => {
+        setOptimisticTab(activeTab);
+    }, [activeTab]);
+
+    const handleTabChange = (newTab: 'terbaru' | 'panas') => {
+        if (optimisticTab === newTab) return;
+        setOptimisticTab(newTab);
+        startTransition(() => {
+            const params = new URLSearchParams(searchParams.toString());
+            if (newTab === 'terbaru') params.delete('tab');
+            else params.set('tab', 'panas');
+            router.push(`/?${params.toString()}`);
+        });
+    };
+
     return (
-        <SocialLayout activeTab={activeTab === 'panas' ? 'Topik Panas' : 'Beranda'}>
+        <SocialLayout activeTab={optimisticTab === 'panas' ? 'Topik Panas' : 'Beranda'}>
             {/* Onboarding Wizard Modal overlay */}
             {user && showOnboarding && (
                 <OnboardingWizard userId={user.id} onComplete={() => setShowOnboarding(false)} />
@@ -67,40 +85,33 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
             {/* Custom Tabs (Untuk Kamu & Terbaru) */}
             <div className="flex w-full border-b border-brand-border sticky top-0 bg-background/80 backdrop-blur-md z-20">
                 <button
-                    onClick={() => {
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.delete('tab');
-                        router.push(`/?${params.toString()}`);
-                    }}
+                    onClick={() => handleTabChange('terbaru')}
                     className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors cursor-pointer"
                 >
                     <div className={`py-4 text-[15px] font-bold relative ${
-                        activeTab === 'terbaru' ? 'text-white' : 'text-zinc-500 font-medium'
+                        optimisticTab === 'terbaru' ? 'text-white' : 'text-zinc-500 font-medium'
                     }`}>
                         Untuk Kamu
-                        {activeTab === 'terbaru' && (
+                        {optimisticTab === 'terbaru' && (
                             <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-blue rounded-t-full" />
                         )}
                     </div>
                 </button>
                 <button
-                    onClick={() => {
-                        const params = new URLSearchParams(searchParams.toString());
-                        params.set('tab', 'panas');
-                        router.push(`/?${params.toString()}`);
-                    }}
+                    onClick={() => handleTabChange('panas')}
                     className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors cursor-pointer"
                 >
                     <div className={`py-4 text-[15px] font-bold relative ${
-                        activeTab === 'panas' ? 'text-white' : 'text-zinc-500 font-medium'
+                        optimisticTab === 'panas' ? 'text-white' : 'text-zinc-500 font-medium'
                     }`}>
                         Topik Panas
-                        {activeTab === 'panas' && (
+                        {optimisticTab === 'panas' && (
                             <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-blue rounded-t-full" />
                         )}
                     </div>
                 </button>
             </div>
+
 
             {/* Short & Sharp Hero Section (Shown below tabs) */}
             <section className="px-4 py-4 md:px-6 md:py-6 text-left border-b border-brand-border bg-background">
@@ -151,7 +162,11 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                         </span>
                     </div>
 
-                    {filteredPolls.length > 0 ? (
+                    {isPending ? (
+                        <div className="flex justify-center items-center py-12">
+                            <div className="w-8 h-8 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    ) : filteredPolls.length > 0 ? (
                         <div className="flex flex-col md:gap-5 divide-y divide-brand-border/40 md:divide-y-0">
                             {filteredPolls.map((poll) => (
                                 <PollCard key={poll.id} poll={poll} />
