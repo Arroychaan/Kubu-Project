@@ -65,7 +65,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
             )}
 
             {/* Short & Sharp Hero Section */}
-            <section className="mb-6 py-5 md:py-6 text-left relative overflow-hidden bg-gradient-to-b from-zinc-900/10 to-zinc-950/5 border border-brand-border/30 rounded-2xl p-5 sm:p-6 shadow-sm backdrop-blur-sm select-none">
+            <section className="mx-4 md:mx-0 mb-6 py-5 md:py-6 text-left relative overflow-hidden bg-gradient-to-b from-zinc-900/10 to-zinc-950/5 border border-brand-border/30 rounded-2xl p-5 sm:p-6 shadow-sm backdrop-blur-sm select-none">
                 <div className="space-y-4 relative z-10 max-w-2xl text-left">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-none text-white uppercase">
                         Pilih sisi. Bela opinimu.
@@ -94,7 +94,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
 
             {/* Cycling Activity Ticker */}
             {recentActivities.length > 0 && (
-                <div className="mb-6 px-4 py-2.5 bg-zinc-950/20 border border-brand-border/60 rounded-xl flex items-center gap-3 overflow-hidden text-xs select-none">
+                <div className="mx-4 md:mx-0 mb-6 px-4 py-2.5 bg-zinc-950/20 border border-brand-border/60 rounded-xl flex items-center gap-3 overflow-hidden text-xs select-none">
                     <span className="flex items-center gap-1.5 px-2 py-0.5 bg-zinc-900 border border-brand-border/80 text-[8px] font-black uppercase tracking-wider text-zinc-500 shrink-0">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         Aktivitas Terkini
@@ -142,7 +142,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
             )}
 
             {/* Custom Tabs (Untuk Kamu & Terbaru) */}
-            <div className="flex items-center gap-6 border-b border-brand-border/60 pb-3 mb-5 select-none text-left">
+            <div className="flex items-center gap-6 border-b border-brand-border/60 pb-3 mb-5 select-none text-left px-4 md:px-0">
                 <button
                     onClick={() => {
                         const params = new URLSearchParams(searchParams.toString());
@@ -174,7 +174,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                 {/* Official Poll Section (Topbar highlight) */}
                 {officialPoll && (
                     <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-zinc-500 font-black text-[9px] uppercase tracking-widest select-none text-left">
+                        <div className="flex items-center gap-2 text-zinc-500 font-black text-[9px] uppercase tracking-widest select-none text-left px-4 md:px-0">
                             <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
                             Pilihan Utama Hari Ini
                         </div>
@@ -184,7 +184,7 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
 
                 {/* Community Feed Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-brand-border/40 pb-2 mb-1 select-none">
+                    <div className="flex items-center justify-between border-b border-brand-border/40 pb-2 mb-1 select-none px-4 md:px-0">
                         <div className="flex items-center gap-2 text-zinc-500 font-black text-[9px] uppercase tracking-widest text-left">
                             <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
                             Feed Opini Publik
@@ -195,13 +195,13 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                     </div>
 
                     {filteredPolls.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-5">
+                        <div className="flex flex-col md:gap-5 divide-y divide-brand-border/40 md:divide-y-0">
                             {filteredPolls.map((poll) => (
                                 <PollCard key={poll.id} poll={poll} />
                             ))}
                         </div>
                     ) : (
-                        <div className="bg-brand-card/30 border border-brand-border/60 rounded-2xl p-10 text-center shadow-lg select-none flex flex-col items-center gap-3">
+                        <div className="mx-4 md:mx-0 bg-brand-card/30 border border-brand-border/60 rounded-2xl p-10 text-center shadow-lg select-none flex flex-col items-center gap-3">
                             <p className="text-zinc-400 text-xs font-bold uppercase tracking-wider">
                                 Belum ada topik panas hari ini.
                             </p>

@@ -331,8 +331,10 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
-            className={`w-full bg-brand-card/50 border border-brand-border/80 rounded-2xl overflow-hidden transition-all duration-300 hover:border-zinc-700/60 hover:bg-brand-card ${
-                isHero ? 'p-6 md:p-8 border-brand-blue/35' : 'p-5 md:p-6'
+            className={`w-full bg-brand-card/50 overflow-hidden transition-all duration-300 hover:bg-brand-card md:rounded-2xl ${
+                isHero 
+                    ? 'p-5 md:p-8 border-y md:border border-brand-blue/35' 
+                    : 'p-4 md:p-6 md:border md:border-brand-border/80 md:hover:border-zinc-700/60'
             }`}
         >
             {/* Header Kreator */}
