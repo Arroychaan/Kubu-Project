@@ -59,73 +59,74 @@ function CommentCard({
     const kubuName = isLeft ? poll.option_a : poll.option_b;
 
     return (
-        <div className={`p-3.5 bg-zinc-950/40 border rounded-2xl relative ${
-            isLeft 
-                ? 'border-choice-left/15 hover:border-choice-left/35' 
-                : 'border-choice-right/15 hover:border-choice-right/35'
-        } transition-all`}>
-            <div className="flex items-start justify-between gap-2 mb-2 select-none">
-                <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-zinc-900 border border-brand-border flex items-center justify-center text-[9px] font-black text-white uppercase select-none">
-                        {username[0]}
-                    </div>
-                    <div>
+        <div className="py-3 group">
+            <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5">
+                    {username[0]?.toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] text-white font-bold">@{username}</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.25 border rounded-[3px] text-[7px] font-black uppercase tracking-wider ${titleInfo.color}`}>
-                                {titleInfo.name}
+                            <span className="text-[14px] font-bold text-white hover:underline cursor-pointer leading-none">
+                                {username}
                             </span>
-                            <span className={`inline-block px-1.5 py-0.25 border rounded-[3px] text-[7px] font-black uppercase tracking-wider ${
-                                isLeft 
-                                    ? 'bg-choice-left/5 border-choice-left/10 text-choice-left' 
-                                    : 'bg-choice-right/5 border-choice-right/10 text-choice-right'
-                            }`}>
-                                Kubu {kubuName}
+                            <span className="text-[14px] text-zinc-500 leading-none">
+                                @{username.toLowerCase().replace(/\s+/g, '')}
+                            </span>
+                            <span className="text-zinc-500 px-0.5">·</span>
+                            <span className="text-[14px] text-zinc-500">
+                                {formattedDate}
                             </span>
                         </div>
+                        {onReport && (
+                            <button 
+                                onClick={onReport}
+                                className="text-zinc-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-red-500/10 cursor-pointer border-none bg-transparent"
+                                title="Laporkan Opini"
+                            >
+                                <Flag className="w-3.5 h-3.5" />
+                            </button>
+                        )}
+                    </div>
+                    
+                    {/* User's choice badge inline if needed, or omit for cleaner look. Let's make it very subtle */}
+                    <div className="mt-0.5 mb-1 text-[12px] text-zinc-500">
+                        Memilih <span className={isLeft ? 'text-choice-left font-medium' : 'text-choice-right font-medium'}>{kubuName}</span>
+                    </div>
+
+                    <p className="text-[14px] text-white leading-relaxed break-words">
+                        {comment.is_toxic ? '🤡' : comment.text}
+                    </p>
+
+                    <div className="flex items-center gap-4 mt-2">
+                        <button
+                            onClick={onSupport}
+                            disabled={isSupported}
+                            className={`flex items-center gap-1.5 transition-colors cursor-pointer text-[13px] group/btn border-none bg-transparent ${
+                                isSupported 
+                                    ? 'text-green-500' 
+                                    : 'text-zinc-500 hover:text-green-500'
+                            }`}
+                        >
+                            <div className={`p-1.5 rounded-full -ml-1.5 transition-colors ${!isSupported && 'group-hover/btn:bg-green-500/10'}`}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill={isSupported ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thumbs-up"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                            </div>
+                            <span className="font-medium">{isSupported ? 'Didukung' : 'Dukung'}</span>
+                        </button>
+                        
+                        {canReply && onReply && (
+                            <button
+                                onClick={onReply}
+                                className="flex items-center gap-1.5 text-[13px] text-zinc-500 hover:text-brand-blue transition-colors cursor-pointer group/btn border-none bg-transparent"
+                            >
+                                <div className="p-1.5 rounded-full -ml-1.5 transition-colors group-hover/btn:bg-brand-blue/10">
+                                    <MessageCircle className="w-4 h-4" />
+                                </div>
+                                <span className="font-medium">Balas</span>
+                            </button>
+                        )}
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-[8px] text-zinc-600 font-semibold">{formattedDate}</span>
-                    {onReport && (
-                        <button 
-                            onClick={onReport}
-                            className="text-[9px] text-zinc-500 hover:text-red-400 transition-colors flex items-center gap-0.5 select-none cursor-pointer border-none bg-transparent"
-                            title="Laporkan Opini"
-                        >
-                            <Flag className="w-2.5 h-2.5" />
-                            <span>Laporkan</span>
-                        </button>
-                    )}
-                </div>
-            </div>
-            
-            <p className="text-xs text-zinc-300 font-medium leading-relaxed pl-8 pr-12 break-words">
-                {comment.is_toxic ? '🤡' : comment.text}
-            </p>
-
-            <div className="flex items-center gap-4 mt-3.5 pl-8 text-[9px] font-black uppercase tracking-wider select-none">
-                <button
-                    onClick={onSupport}
-                    disabled={isSupported}
-                    className={`flex items-center gap-1.5 transition-colors cursor-pointer ${
-                        isSupported 
-                            ? 'text-emerald-500 font-extrabold' 
-                            : 'text-zinc-500 hover:text-white'
-                    }`}
-                >
-                    <span>👍</span>
-                    <span>{isSupported ? 'Didukung' : 'Dukung argumen ini'}</span>
-                </button>
-                
-                {canReply && onReply && (
-                    <button
-                        onClick={onReply}
-                        className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
-                    >
-                        Balas
-                    </button>
-                )}
             </div>
         </div>
     );
@@ -331,162 +332,120 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
-            className={`w-full bg-brand-card/50 overflow-hidden transition-all duration-300 hover:bg-brand-card md:rounded-2xl ${
+            className={`w-full bg-background transition-colors hover:bg-zinc-900/20 ${
                 isHero 
-                    ? 'p-5 md:p-8 border-y md:border border-brand-blue/35' 
-                    : 'p-4 md:p-6 md:border md:border-brand-border/80 md:hover:border-zinc-700/60'
+                    ? 'p-4 sm:p-5 border-b border-brand-border bg-zinc-900/10' 
+                    : 'p-4 sm:p-5 border-b border-brand-border'
             }`}
         >
-            {/* Header Kreator */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-brand-border/40 select-none">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-brand-border/80 flex items-center justify-center text-xs font-black text-zinc-400 uppercase">
-                        {creatorName[0] || 'P'}
-                    </div>
-                    <div className="flex flex-col text-left">
+            <div className="flex items-start gap-3 w-full">
+                {/* Left Column: Avatar */}
+                <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                    {creatorName[0]?.toUpperCase() || 'P'}
+                </div>
+
+                {/* Right Column: Content */}
+                <div className="flex-1 min-w-0">
+                    {/* Header: Name, Handle, Time */}
+                    <div className="flex items-center justify-between mb-1 select-none">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-bold text-white leading-none">{creatorName}</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.5 border rounded-[3px] text-[7px] font-black uppercase tracking-wider ${creatorTitleInfo.color}`}>
-                                {creatorTitleInfo.name}
+                            <span className="text-[15px] font-bold text-white leading-none hover:underline cursor-pointer">
+                                {creatorName}
+                            </span>
+                            <span className="text-[15px] text-zinc-500 leading-none">
+                                @{creatorName.toLowerCase().replace(/\s+/g, '')}
+                            </span>
+                            <span className="text-zinc-500 px-1">·</span>
+                            <span className="text-[15px] text-zinc-500 hover:underline cursor-pointer">
+                                {formattedTime}
                             </span>
                         </div>
-                        <span className="text-[9px] text-zinc-500 font-semibold mt-1">
-                            {formattedTime}
-                        </span>
+                        {poll.is_official && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-blue/10 text-brand-blue text-[11px] font-bold rounded-full tracking-wide">
+                                Resmi
+                            </span>
+                        )}
                     </div>
-                </div>
-                {poll.is_official && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-blue/5 border border-brand-blue/20 text-brand-blue text-[9px] font-black rounded uppercase tracking-wider">
-                        ⚡ Pilihan Resmi
-                    </span>
-                )}
-            </div>
 
-            {/* Question */}
-            <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                    <h3 className={`font-bold text-white leading-snug tracking-tight ${
-                        isHero ? 'text-lg md:text-xl font-black' : 'text-sm md:text-base'
+                    {/* Question */}
+                    <h3 className={`font-medium text-white leading-snug break-words ${
+                        isHero ? 'text-[17px] md:text-lg' : 'text-[15px] md:text-[16px]'
                     }`}>
                         {poll.question}
                     </h3>
-                </div>
-            </div>
 
-            {/* Choice Bar comparison */}
-            <div className={isHero ? 'my-6' : 'my-4'}>
-                <ChoiceBar
-                    countA={countA}
-                    countB={countB}
-                    onVote={handleVote}
-                    hasVoted={hasVoted}
-                    labelA={poll.option_a}
-                    labelB={poll.option_b}
-                    className={isHero ? 'h-28 sm:h-32' : ''}
-                />
-            </div>
-
-            {/* Pratinjau Argumen Sebelum Vote (Hanya tampil jika ada opini) */}
-            {!hasVoted && (topCommentA || topCommentB) && (
-                <div className="mt-4 p-3 bg-zinc-950/30 border border-brand-border/60 rounded-xl space-y-2.5">
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-1">
-                        Opini Warga Terkini
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {topCommentA && (
-                            <div className="p-2.5 bg-zinc-950/40 border border-choice-left/10 rounded-lg text-left">
-                                <div className="flex items-center gap-1.5 mb-1.5">
-                                    <div className="w-4 h-4 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-400 uppercase">
-                                        {(topCommentA.profiles?.username || 'U')[0]}
-                                    </div>
-                                    <span className="text-[9px] text-zinc-400 font-bold truncate max-w-[80px]">
-                                        @{topCommentA.profiles?.username || 'pengguna'}
-                                    </span>
-                                    <span className="text-[8px] text-choice-left bg-choice-left/5 px-1 rounded uppercase tracking-wider font-extrabold">
-                                        Pilih {poll.option_a}
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-zinc-300 font-medium line-clamp-2 leading-relaxed">
-                                    "{topCommentA.is_toxic ? '🤡' : topCommentA.text}"
-                                </p>
-                            </div>
-                        )}
-                        {topCommentB && (
-                            <div className="p-2.5 bg-zinc-950/40 border border-choice-right/10 rounded-lg text-left">
-                                <div className="flex items-center gap-1.5 mb-1.5">
-                                    <div className="w-4 h-4 rounded bg-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-400 uppercase">
-                                        {(topCommentB.profiles?.username || 'U')[0]}
-                                    </div>
-                                    <span className="text-[9px] text-zinc-400 font-bold truncate max-w-[80px]">
-                                        @{topCommentB.profiles?.username || 'pengguna'}
-                                    </span>
-                                    <span className="text-[8px] text-choice-right bg-choice-right/5 px-1 rounded uppercase tracking-wider font-extrabold">
-                                        Pilih {poll.option_b}
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-zinc-300 font-medium line-clamp-2 leading-relaxed">
-                                    "{topCommentB.is_toxic ? '🤡' : topCommentB.text}"
-                                </p>
-                            </div>
-                        )}
+                    {/* Choice Bar comparison */}
+                    <div className="my-3">
+                        <ChoiceBar
+                            countA={countA}
+                            countB={countB}
+                            onVote={handleVote}
+                            hasVoted={hasVoted}
+                            labelA={poll.option_a}
+                            labelB={poll.option_b}
+                            className={isHero ? 'h-24' : ''}
+                        />
                     </div>
-                </div>
-            )}
 
-            {/* Toast feedback inside card */}
-            {message && (
-                <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`mb-4 p-3 border border-brand-border/60 rounded-xl text-[10px] font-bold flex items-center gap-2 bg-zinc-950/45 ${
-                        message.type === 'error'
-                            ? 'text-red-400 border-red-500/15'
-                            : message.type === 'success'
-                            ? 'text-green-400 border-green-500/15'
-                            : 'text-zinc-300 border-brand-blue/15'
-                    }`}
-                >
-                    <Info className="w-3.5 h-3.5 shrink-0" />
-                    <span>{message.text}</span>
-                </motion.div>
-            )}
-
-            {/* Footer details */}
-            <div className="flex items-center justify-between text-zinc-500 text-[11px] font-bold pt-2 select-none">
-                <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5 text-zinc-400">
-                        <MessageCircle className="w-3.5 h-3.5 text-zinc-500" />
-                        {total.toLocaleString()} suara masuk
-                    </span>
-                    
-                    {userChoice && (
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                            userChoice === 'a' 
-                                ? 'bg-choice-left/10 text-choice-left border border-choice-left/15' 
-                                : 'bg-choice-right/10 text-choice-right border border-choice-right/15'
-                        }`}>
-                            Pilihan: {userChoice === 'a' ? poll.option_a : poll.option_b}
-                        </span>
+                    {/* Toast feedback inside card */}
+                    {message && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`mb-3 p-3 rounded-xl text-[13px] font-bold flex items-center gap-2 ${
+                                message.type === 'error'
+                                    ? 'bg-red-500/10 text-red-500'
+                                    : message.type === 'success'
+                                    ? 'bg-green-500/10 text-green-500'
+                                    : 'bg-brand-blue/10 text-brand-blue'
+                            }`}
+                        >
+                            <Info className="w-4 h-4 shrink-0" />
+                            <span>{message.text}</span>
+                        </motion.div>
                     )}
-                </div>
-                
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={handleShare}
-                        className="flex items-center gap-1.5 hover:text-zinc-300 transition-colors cursor-pointer select-none border-none bg-transparent"
-                    >
-                        <Share2 className="w-3.5 h-3.5" />
-                        Bagikan
-                    </button>
-                    <button
-                        onClick={() => handleReportClick('poll', poll.id, 'polling ini')}
-                        className="flex items-center gap-1.5 hover:text-red-400 text-zinc-500 transition-colors cursor-pointer select-none border-none bg-transparent"
-                    >
-                        <Flag className="w-3.5 h-3.5" />
-                        Laporkan
-                    </button>
-                </div>
-            </div>
+
+                    {/* Footer Actions */}
+                    <div className="flex items-center justify-between text-zinc-500 text-[13px] mt-2 select-none max-w-md">
+                        <div className="flex items-center gap-6">
+                            <button className="flex items-center gap-2 hover:text-brand-blue transition-colors group cursor-pointer border-none bg-transparent">
+                                <div className="p-2 rounded-full group-hover:bg-brand-blue/10 -ml-2 transition-colors">
+                                    <MessageCircle className="w-4 h-4" />
+                                </div>
+                                <span className="group-hover:text-brand-blue">{total.toLocaleString()} suara</span>
+                            </button>
+                            
+                            <button
+                                onClick={handleShare}
+                                className="flex items-center gap-2 hover:text-green-500 transition-colors group cursor-pointer border-none bg-transparent"
+                            >
+                                <div className="p-2 rounded-full group-hover:bg-green-500/10 -ml-2 transition-colors">
+                                    <Share2 className="w-4 h-4" />
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                            {userChoice && (
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                    userChoice === 'a' 
+                                        ? 'bg-choice-left/10 text-choice-left' 
+                                        : 'bg-choice-right/10 text-choice-right'
+                                }`}>
+                                    Pilihanmu: {userChoice === 'a' ? poll.option_a : poll.option_b}
+                                </span>
+                            )}
+                            <button
+                                onClick={() => handleReportClick('poll', poll.id, 'polling ini')}
+                                className="flex items-center hover:text-red-500 transition-colors group cursor-pointer border-none bg-transparent"
+                                title="Laporkan"
+                            >
+                                <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
+                                    <Flag className="w-4 h-4" />
+                                </div>
+                            </button>
+                        </div>
+                    </div>
 
             {/* Segmented Comments Section */}
             {hasVoted && (() => {
@@ -766,6 +725,8 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
                     </div>
                 )}
             </AnimatePresence>
+                </div>
+            </div>
         </motion.div>
     );
 }

@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #080B12;
-  --surface: #111827;
-  --surface-hover: #172033;
-  --border: #253044;
-  --text-utama: #F8FAFC;
-  --text-sekunder: #94A3B8;
-  --accent-utama: #3B82F6;
-  --kubu-kiri: #F43F5E;
-  --kubu-kanan: #06B6D4;
-  --success: #22C55E;
-  --warning: #F59E0B;
+  --background: #000000;
+  --surface: #000000;
+  --surface-hover: #16181C;
+  --border: #2F3336;
+  --text-utama: #E7E9EA;
+  --text-sekunder: #71767B;
+  --accent-utama: #1D9BF0;
+  --kubu-kiri: #F91880;
+  --kubu-kanan: #00BA7C;
+  --success: #00BA7C;
+  --warning: #FFD400;
 
   /* Keep legacy variables for compatibility */
   --foreground: var(--text-utama);

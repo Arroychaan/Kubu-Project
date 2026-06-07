@@ -57,7 +57,7 @@ export default function MobileBottomNav({ activeTab }: MobileBottomNavProps) {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/80 backdrop-blur-xl border-t border-brand-border/60 h-16 px-4 flex items-center justify-around select-none">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-md border-t border-brand-border h-[60px] px-2 flex items-center justify-around select-none">
             {items.map((item, idx) => {
                 const Icon = item.icon;
                 
@@ -66,7 +66,7 @@ export default function MobileBottomNav({ activeTab }: MobileBottomNavProps) {
                         <button
                             key={idx}
                             onClick={item.onClick}
-                            className="relative -top-4 w-12 h-12 rounded-full bg-brand-blue border border-brand-blue/30 shadow-lg shadow-brand-blue/20 flex items-center justify-center text-white active:scale-90 transition-transform cursor-pointer shrink-0"
+                            className="w-11 h-11 rounded-full bg-brand-blue flex items-center justify-center text-white active:scale-95 transition-transform cursor-pointer shrink-0"
                             title="Lempar Topik"
                         >
                             <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -78,12 +78,11 @@ export default function MobileBottomNav({ activeTab }: MobileBottomNavProps) {
                     <Link
                         key={idx}
                         href={item.href}
-                        className={`flex flex-col items-center justify-center py-2 px-3 text-center transition-colors ${
-                            item.active ? 'text-brand-blue' : 'text-slate-400 hover:text-white'
+                        className={`flex flex-col items-center justify-center py-2 px-4 transition-colors ${
+                            item.active ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
                         }`}
                     >
-                        <Icon className="w-5 h-5" />
-                        <span className="text-[8px] font-bold mt-1 uppercase tracking-wider">{item.name}</span>
+                        <Icon className="w-6 h-6" strokeWidth={item.active ? 2.5 : 2} />
                     </Link>
                 );
             })}

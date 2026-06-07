@@ -65,95 +65,46 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
             )}
 
             {/* Short & Sharp Hero Section */}
-            <section className="mx-4 md:mx-0 mb-6 py-5 md:py-6 text-left relative overflow-hidden bg-gradient-to-b from-zinc-900/10 to-zinc-950/5 border border-brand-border/30 rounded-2xl p-5 sm:p-6 shadow-sm backdrop-blur-sm select-none">
-                <div className="space-y-4 relative z-10 max-w-2xl text-left">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-none text-white uppercase">
+            <section className="px-4 py-4 md:px-6 md:py-6 text-left border-b border-brand-border bg-background">
+                <div className="space-y-2 max-w-2xl text-left">
+                    <h1 className="text-xl md:text-2xl font-bold text-white">
                         Pilih sisi. Bela opinimu.
                     </h1>
-
-                    <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed font-bold">
+                    <p className="text-zinc-500 text-[15px]">
                         KUBU adalah tempat kamu ikut topik yang lagi ramai, memilih kubu, lalu melihat argumen mana yang paling kuat.
                     </p>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 pt-1">
+                    <div className="pt-2">
                         <button
                             onClick={() => {
                                 const element = document.getElementById('opinion-feed');
                                 element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             }}
-                            className="px-5 py-2.5 bg-white hover:bg-zinc-200 text-black font-black rounded-xl transition-all shadow-md active:scale-95 duration-150 text-[10px] sm:text-xs tracking-wider uppercase cursor-pointer text-center"
+                            className="px-5 py-2 bg-white hover:bg-zinc-200 text-black font-bold rounded-full transition-colors text-[15px]"
                         >
                             Pilih Kubumu
                         </button>
-                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider select-none">
-                            Mulai dari topik ringan, isu viral, sampai debat sehari-hari.
-                        </span>
                     </div>
                 </div>
             </section>
 
-            {/* Cycling Activity Ticker */}
-            {recentActivities.length > 0 && (
-                <div className="mx-4 md:mx-0 mb-6 px-4 py-2.5 bg-zinc-950/20 border border-brand-border/60 rounded-xl flex items-center gap-3 overflow-hidden text-xs select-none">
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 bg-zinc-900 border border-brand-border/80 text-[8px] font-black uppercase tracking-wider text-zinc-500 shrink-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        Aktivitas Terkini
-                    </span>
-                    <div className="flex-1 relative h-4 overflow-hidden">
-                        <AnimatePresence mode="wait">
-                            {recentActivities.map((act, index) => {
-                                if (index !== activityIndex) return null;
-                                const timeStr = new Date(act.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                                return (
-                                    <motion.div
-                                        key={index}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.35 }}
-                                        className="absolute inset-0 flex items-center text-[10px] sm:text-xs font-semibold text-zinc-400 gap-1.5 truncate text-left"
-                                    >
-                                        <strong className="text-zinc-300">@{act.username}</strong>
-                                        {act.type === 'vote' ? (
-                                            <>
-                                                <span>memilih</span>
-                                                <span className={act.choice === 'a' ? 'text-choice-left font-extrabold' : 'text-choice-right font-extrabold'}>
-                                                    {act.choice === 'a' ? act.option_a : act.option_b}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>menulis argumen:</span>
-                                                <span className="text-zinc-300 font-semibold italic truncate">
-                                                    "{act.text}"
-                                                </span>
-                                            </>
-                                        )}
-                                        <span className="text-[8px] text-zinc-600 font-bold ml-auto shrink-0 select-none">
-                                            {timeStr}
-                                            {act.type === 'comment' ? ' 💬' : ' 🗳️'}
-                                        </span>
-                                    </motion.div>
-                                );
-                            })}
-                        </AnimatePresence>
-                    </div>
-                </div>
-            )}
-
             {/* Custom Tabs (Untuk Kamu & Terbaru) */}
-            <div className="flex items-center gap-6 border-b border-brand-border/60 pb-3 mb-5 select-none text-left px-4 md:px-0">
+            <div className="flex w-full border-b border-brand-border">
                 <button
                     onClick={() => {
                         const params = new URLSearchParams(searchParams.toString());
                         params.delete('tab');
                         router.push(`/?${params.toString()}`);
                     }}
-                    className={`text-xs font-black uppercase tracking-wider transition-colors cursor-pointer ${
-                        activeTab === 'terbaru' ? 'text-white border-b-2 border-brand-blue pb-3 -mb-3.5' : 'text-slate-500 hover:text-slate-300'
-                    }`}
+                    className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors"
                 >
-                    Untuk Kamu
+                    <div className={`py-4 text-[15px] font-bold relative ${
+                        activeTab === 'terbaru' ? 'text-white' : 'text-zinc-500 font-medium'
+                    }`}>
+                        Untuk Kamu
+                        {activeTab === 'terbaru' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-blue rounded-t-full" />
+                        )}
+                    </div>
                 </button>
                 <button
                     onClick={() => {
@@ -161,11 +112,16 @@ export default function HomeClient({ officialPoll, communityPolls, stats, recent
                         params.set('tab', 'panas');
                         router.push(`/?${params.toString()}`);
                     }}
-                    className={`text-xs font-black uppercase tracking-wider transition-colors cursor-pointer ${
-                        activeTab === 'panas' ? 'text-white border-b-2 border-brand-blue pb-3 -mb-3.5' : 'text-slate-500 hover:text-slate-300'
-                    }`}
+                    className="flex-1 flex justify-center hover:bg-zinc-900/40 transition-colors"
                 >
-                    Terbaru
+                    <div className={`py-4 text-[15px] font-bold relative ${
+                        activeTab === 'panas' ? 'text-white' : 'text-zinc-500 font-medium'
+                    }`}>
+                        Terbaru
+                        {activeTab === 'panas' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-blue rounded-t-full" />
+                        )}
+                    </div>
                 </button>
             </div>
 
