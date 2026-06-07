@@ -40,7 +40,7 @@ export default function SocialLayout({ children, activeTab = 'beranda' }: Social
                 </main>
 
                 {/* 3. Right Panel Sidebar (Desktop/Tablet only, lg breakpoint) */}
-                <aside className="hidden lg:block w-[350px] shrink-0 sticky top-0 h-screen py-2 pl-8">
+                <aside className="hidden lg:block w-[350px] shrink-0 py-2 pl-8">
                     <RightPanel />
                 </aside>
                 
