@@ -243,8 +243,13 @@ export default function PollCard({ poll, isHero = false }: PollCardProps) {
         });
     };
 
+    // Only fetch comments when user has voted (lazy load)
+    const [commentsFetched, setCommentsFetched] = useState(false);
     useEffect(() => {
-        fetchPollComments();
+        if (hasVoted && !commentsFetched) {
+            setCommentsFetched(true);
+            fetchPollComments();
+        }
     }, [poll.id, hasVoted]);
 
     const handleSendComment = async (e: React.FormEvent) => {

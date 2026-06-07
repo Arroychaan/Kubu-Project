@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Home, Flame, Trophy, User, Plus, LogOut, Shield } from 'lucide-react';
+import { Home, Flame, Trophy, User, Plus, LogOut, Shield, Compass, Bell } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { supabase } from '@/lib/supabase';
 import { getUserTitle } from './LeaderboardClient';
@@ -39,6 +39,18 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
             active: pathname === '/' && isHotTab
         },
         {
+            name: 'Jelajah',
+            href: '/explore',
+            icon: Compass,
+            active: pathname.startsWith('/explore')
+        },
+        {
+            name: 'Notifikasi',
+            href: '/notifications',
+            icon: Bell,
+            active: pathname.startsWith('/notifications')
+        },
+        {
             name: 'Peringkat',
             href: '/leaderboard',
             icon: Trophy,
@@ -55,7 +67,7 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
     const titleInfo = profile ? getUserTitle(profile.points ?? 50) : null;
 
     return (
-        <div className="flex flex-col h-full justify-between select-none items-end xl:items-start">
+        <div className="flex flex-col h-screen justify-between select-none items-end xl:items-start overflow-y-auto no-scrollbar pb-8">
             <div className="space-y-2 xl:space-y-4 w-full xl:w-[250px] flex flex-col items-center xl:items-start pt-2">
                 {/* Logo */}
                 <Link href="/" className="flex items-center justify-center xl:justify-start gap-3 group p-3 hover:bg-zinc-900/50 rounded-full w-fit transition-colors xl:ml-2">
@@ -129,14 +141,15 @@ export default function LeftSidebar({ activeTab }: LeftSidebarProps) {
                             <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-white shrink-0">
                                 {profile.username?.[0]?.toUpperCase() || 'U'}
                             </div>
-                            <div className="hidden xl:block flex-1 min-w-0 text-left">
-                                <span className="block text-[15px] font-bold text-white truncate leading-tight">
-                                    {profile.username || 'User'}
+                            <div className="hidden xl:flex flex-col min-w-0 mr-3">
+                                <span className="text-[15px] font-bold text-white truncate leading-tight">
+                                    {profile.username || user.email?.split('@')[0]}
                                 </span>
-                                <span className="block text-[15px] text-zinc-500 truncate leading-tight">
-                                    @{profile.username || 'user'}
+                                <span className="text-[15px] text-zinc-500 truncate leading-tight">
+                                    @{profile.username || user.email?.split('@')[0]}
                                 </span>
                             </div>
+                            {/* Remove points display from Left Sidebar to match X profile look */}
                         </Link>
                         <button
                             onClick={handleSignOut}

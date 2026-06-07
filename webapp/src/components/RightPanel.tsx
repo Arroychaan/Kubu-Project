@@ -15,17 +15,17 @@ export default function RightPanel() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch hot topics (first 3 from community polls)
-                const { success: pollsSuccess, data: pollsData } = await getCommunityPolls(5, 0);
-                if (pollsSuccess && pollsData) {
-                    const polls = (pollsData as Poll[]).filter(p => !p.is_official).slice(0, 3);
-                    setHotTopics(polls);
-                }
+                // Fetch both in parallel instead of sequential
+                const [pollsResult, leaderboardResult] = await Promise.all([
+                    getCommunityPolls(3, 0),
+                    getLeaderboard(3),
+                ]);
 
-                // Fetch top 3 users from leaderboard
-                const { success: leaderboardSuccess, data: leaderboardData } = await getLeaderboard(3);
-                if (leaderboardSuccess && leaderboardData) {
-                    setInfluentialUsers(leaderboardData as any[]);
+                if (pollsResult.success && pollsResult.data) {
+                    setHotTopics((pollsResult.data as Poll[]).slice(0, 3));
+                }
+                if (leaderboardResult.success && leaderboardResult.data) {
+                    setInfluentialUsers(leaderboardResult.data as any[]);
                 }
             } catch (err) {
                 console.error('Error fetching RightPanel data:', err);
@@ -137,7 +137,7 @@ export default function RightPanel() {
 
             {/* 3. Influential Users Section */}
             <div className="bg-zinc-900/50 rounded-2xl p-4 space-y-3">
-                <h3 className="font-bold text-lg text-white">Pengguna Berpengaruh</h3>
+                <h3 className="font-bold text-lg text-white">Untuk Diikuti</h3>
 
                 <div className="space-y-4">
                     {isLoading ? (
@@ -151,35 +151,44 @@ export default function RightPanel() {
                             </div>
                         </div>
                     ) : influentialUsers.length > 0 ? (
-                        influentialUsers.map((user, idx) => {
-                            const titleInfo = getUserTitle(user.points || 0);
+                        influentialUsers.map((user) => {
                             return (
                                 <Link 
                                     key={user.id} 
                                     href={`/profile?username=${user.username}`} 
                                     className="flex items-center gap-3 group"
                                 >
-                                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-white shrink-0 group-hover:brightness-110 transition-all">
                                         {user.username?.[0]?.toUpperCase() || 'U'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-[15px] font-bold text-white group-hover:underline truncate">
-                                                {user.username || 'Anonymous'}
+                                        <div className="flex flex-col">
+                                            <span className="text-[15px] font-bold text-white truncate leading-tight group-hover:underline">
+                                                {user.username || 'User'}
                                             </span>
-                                            {idx === 0 && <span className="text-amber-500 text-xs">⭐</span>}
+                                            <span className="text-[14px] text-zinc-500 truncate leading-tight">
+                                                @{user.username || 'user'}
+                                            </span>
                                         </div>
-                                        <span className="text-[13px] text-zinc-500 block truncate">
-                                            @{user.username || 'anonymous'} • {titleInfo.name}
-                                        </span>
                                     </div>
+                                    <button className="h-8 px-4 bg-white text-black text-sm font-bold rounded-full hover:bg-zinc-200 transition-colors shrink-0">
+                                        Ikuti
+                                    </button>
                                 </Link>
                             );
                         })
                     ) : (
-                        <p className="text-[14px] text-zinc-500">Belum ada pengguna berpengaruh.</p>
+                        <p className="text-[13px] text-zinc-500 font-medium pb-2">Belum ada data pengguna.</p>
                     )}
                 </div>
+            </div>
+
+            {/* 4. Footer Links */}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 px-4 py-2 text-[13px] text-zinc-500 font-medium">
+                <a href="#" className="hover:underline">Kebijakan Pengguna</a>
+                <a href="#" className="hover:underline">Privasi Pengguna</a>
+                <a href="#" className="hover:underline">Tentang</a>
+                <span>© 2026 Kubu.</span>
             </div>
         </div>
     );

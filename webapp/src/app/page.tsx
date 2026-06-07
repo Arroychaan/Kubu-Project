@@ -27,47 +27,44 @@ export default async function Home(props: {
   const searchQuery = searchParams.search || '';
   const supabase = await createSupabaseServerClient();
 
-  // Fetch Database Statistics
-  let { count: countPolls } = await supabase
-    .from('polls')
-    .select('*', { count: 'exact', head: true });
-    
+  // === PARALLEL BATCH 1: All independent counts + recent data ===
+  const [
+    { count: countPolls },
+    { count: countVotes },
+    { count: countUsers },
+    { data: recentComments },
+    { data: recentVotes },
+    { data: officialData },
+  ] = await Promise.all([
+    supabase.from('polls').select('*', { count: 'exact', head: true }),
+    supabase.from('votes').select('*', { count: 'exact', head: true }),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('comments')
+      .select('created_at, text, choice, poll:polls(question, option_a, option_b), profile:profiles(username)')
+      .order('created_at', { ascending: false }).limit(5),
+    supabase.from('votes')
+      .select('created_at, choice, poll:polls(question, option_a, option_b), profile:profiles(username)')
+      .order('created_at', { ascending: false }).limit(5),
+    supabase.from('polls')
+      .select('id, question, option_a, option_b, is_official, created_at, creator_id')
+      .eq('is_official', true)
+      .order('created_at', { ascending: false }).limit(1).single(),
+  ]);
+
+  // Seed if empty (rare, first-time only)
+  let finalCountPolls = countPolls;
   if (!countPolls || countPolls === 0) {
     const { seedInitialTopics } = await import('./actions');
     await seedInitialTopics();
-    
-    const { count: newCount } = await supabase
-      .from('polls')
-      .select('*', { count: 'exact', head: true });
-    countPolls = newCount;
+    const { count: newCount } = await supabase.from('polls').select('*', { count: 'exact', head: true });
+    finalCountPolls = newCount;
   }
-    
-  const { count: countVotes } = await supabase
-    .from('votes')
-    .select('*', { count: 'exact', head: true });
-
-  const { count: countUsers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true });
 
   const stats = {
-    totalPolls: countPolls ?? 0,
+    totalPolls: finalCountPolls ?? 0,
     totalVotes: countVotes ?? 0,
     totalUsers: countUsers ?? 0
   };
-
-  // Fetch Recent Activities (votes + comments) for static ticker
-  const { data: recentComments } = await supabase
-    .from('comments')
-    .select('created_at, text, choice, poll:polls(question, option_a, option_b), profile:profiles(username)')
-    .order('created_at', { ascending: false })
-    .limit(5);
-
-  const { data: recentVotes } = await supabase
-    .from('votes')
-    .select('created_at, choice, poll:polls(question, option_a, option_b), profile:profiles(username)')
-    .order('created_at', { ascending: false })
-    .limit(5);
 
   const commentActivities = (recentComments ?? []).map((c: any) => ({
     type: 'comment',
@@ -95,117 +92,76 @@ export default async function Home(props: {
     .slice(0, 5);
 
   // Fetch Official Poll
-  let officialPoll: Poll | null = null;
-  const { data: officialData } = await supabase
-    .from('polls')
-    .select('id, question, option_a, option_b, is_official, created_at, creator_id')
-    .eq('is_official', true)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (officialData) {
-    const poll = officialData as any;
-
-    // Fetch stats for official poll
-    const { data: statsData } = await supabase
-      .from('poll_stats')
-      .select('count_a, count_b')
-      .eq('poll_id', poll.id)
-      .single();
-
-    const pollStats = statsData as RawPollStats | null;
-
-    officialPoll = {
-      id: poll.id,
-      question: poll.question,
-      option_a: poll.option_a,
-      option_b: poll.option_b,
-      is_official: poll.is_official ?? false,
-      created_at: poll.created_at,
-      is_featured: poll.is_featured ?? false,
-      is_hidden_from_home: poll.is_hidden_from_home ?? false,
-      creator: poll.creator,
-      stats: {
-        count_a: pollStats?.count_a ?? 0,
-        count_b: pollStats?.count_b ?? 0,
-      },
-    };
-  }
-
-  // Fetch Community Polls
-  const communityPolls: Poll[] = [];
-    let query = supabase
+  // === PARALLEL BATCH 2: Community polls + Official poll stats ===
+  let communityQuery = supabase
     .from('polls')
     .select('id, question, option_a, option_b, is_official, created_at, creator_id')
     .eq('is_official', false);
 
   if (searchQuery) {
-    query = query.ilike('question', `%${searchQuery}%`);
+    communityQuery = communityQuery.ilike('question', `%${searchQuery}%`);
   }
 
-  const { data: communityData, error: commError } = await query
-    .order('created_at', { ascending: false })
-    .limit(30); // fetch more to allow filtering
+  const officialPollId = (officialData as any)?.id;
 
-  if (commError) {
-    console.error("COMMUNITY POLLS ERROR:", commError);
+  const [communityResult, officialStatsResult] = await Promise.all([
+    communityQuery.order('created_at', { ascending: false }).limit(20),
+    officialPollId
+      ? supabase.from('poll_stats').select('count_a, count_b').eq('poll_id', officialPollId).single()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  // Build official poll
+  let officialPoll: Poll | null = null;
+  if (officialData) {
+    const poll = officialData as any;
+    const pollStats = officialStatsResult.data as RawPollStats | null;
+    officialPoll = {
+      id: poll.id,
+      question: poll.question,
+      option_a: poll.option_a,
+      option_b: poll.option_b,
+      is_official: true,
+      created_at: poll.created_at,
+      stats: { count_a: pollStats?.count_a ?? 0, count_b: pollStats?.count_b ?? 0 },
+    };
   }
 
-  if (communityData && Array.isArray(communityData) && communityData.length > 0) {
-    const polls = communityData as any[];
-    
-    // Programmatic filter for hidden polls + curation (fallback)
-    const filteredPolls = polls;
+  // Build community polls
+  const communityPolls: Poll[] = [];
+  const communityData = communityResult.data;
 
-    // Fetch stats for all community polls
-    const pollIds = filteredPolls.map(p => p.id);
-    
-    let allStats: RawPollStats[] = [];
-    if (pollIds.length > 0) {
-      const { data: allStatsData } = await supabase
-        .from('poll_stats')
-        .select('poll_id, count_a, count_b')
-        .in('poll_id', pollIds);
-      allStats = (allStatsData ?? []) as RawPollStats[];
-    }
+  if (communityData && communityData.length > 0) {
+    const pollIds = communityData.map((p: any) => p.id);
 
-    for (const poll of filteredPolls) {
+    // Single batch stats fetch
+    const { data: allStatsData } = pollIds.length > 0
+      ? await supabase.from('poll_stats').select('poll_id, count_a, count_b').in('poll_id', pollIds)
+      : { data: [] };
+    const allStats = (allStatsData ?? []) as RawPollStats[];
+
+    for (const poll of communityData as any[]) {
       const stat = allStats.find(s => s.poll_id === poll.id);
-        communityPolls.push({
+      communityPolls.push({
         id: poll.id,
         question: poll.question,
         option_a: poll.option_a,
         option_b: poll.option_b,
-        is_official: poll.is_official ?? false,
+        is_official: false,
         created_at: poll.created_at,
-        creator: null, // Fallback if no creator data
-        stats: {
-          count_a: stat?.count_a ?? 0,
-          count_b: stat?.count_b ?? 0,
-        },
+        stats: { count_a: stat?.count_a ?? 0, count_b: stat?.count_b ?? 0 },
       });
     }
-
-    // Sort: created_at DESC
-    communityPolls.sort((a, b) => {
-      return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
-    });
   }
 
   return (
-    <main className="min-h-screen bg-background relative overflow-hidden">
-
-
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-        <HomeClient 
-          officialPoll={officialPoll} 
-          communityPolls={communityPolls} 
-          stats={stats}
-          recentActivities={recentActivities}
-        />
-      </div>
+    <main className="min-h-screen bg-background relative w-full">
+      <HomeClient 
+        officialPoll={officialPoll} 
+        communityPolls={communityPolls} 
+        stats={stats}
+        recentActivities={recentActivities}
+      />
     </main>
   );
 }
