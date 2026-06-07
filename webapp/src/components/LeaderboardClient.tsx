@@ -87,7 +87,7 @@ export default function LeaderboardClient({ users }: LeaderboardClientProps) {
 
             {/* Podium (Top 3 Users) */}
             {topThree.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-10 items-end px-1 sm:px-0">
                     {podiumList.map(({ user, rank, style }) => {
                         const titleInfo = getUserTitle(user.points || 0);
                         return (
@@ -96,43 +96,43 @@ export default function LeaderboardClient({ users }: LeaderboardClientProps) {
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: rank * 0.15 }}
-                                className={`bg-zinc-900/40 border rounded-3xl p-6 flex flex-col items-center text-center shadow-xl backdrop-blur-md relative overflow-hidden h-fit ${style.bg} ${style.shadow} ${style.order}`}
+                                className={`bg-zinc-900/40 border rounded-[20px] p-4 flex flex-col items-center text-center shadow-xl backdrop-blur-md relative overflow-hidden h-fit ${style.bg} ${style.shadow} ${style.order}`}
                             >
                                 {/* Glow element */}
                                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.01] to-transparent pointer-events-none" />
 
                                 {/* Rank Badge */}
-                                <div className="absolute top-4 right-4 text-xl font-black select-none">
+                                <div className="absolute top-2 right-2 sm:top-3 sm:right-3 text-sm sm:text-lg font-black select-none">
                                     {style.badge}
                                 </div>
 
                                 {/* Avatar */}
-                                <div className="relative mb-4 mt-2">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-choice-left/80 to-choice-right/80 p-[1.5px] flex items-center justify-center shadow-md">
-                                        <div className="w-full h-full rounded-2xl bg-zinc-950 flex items-center justify-center text-lg font-black text-white uppercase select-none">
+                                <div className="relative mb-3 mt-1 sm:mt-2">
+                                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-choice-left/80 to-choice-right/80 p-[1.5px] flex items-center justify-center shadow-md">
+                                        <div className="w-full h-full rounded-2xl bg-zinc-950 flex items-center justify-center text-base sm:text-lg font-black text-white uppercase select-none">
                                             {user.username?.[0] || 'U'}
                                         </div>
                                     </div>
-                                    <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-lg bg-zinc-950 border border-brand-border flex items-center justify-center text-[10px] shadow-md select-none">
+                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-zinc-950 border border-brand-border flex items-center justify-center text-[10px] sm:text-xs shadow-md select-none">
                                         {style.badge}
                                     </div>
                                 </div>
 
                                 {/* Username */}
-                                <h3 className="text-base font-black text-white truncate max-w-full">
+                                <h3 className="text-sm sm:text-base font-black text-white truncate w-full px-1">
                                     {user.username || 'Anonymous'}
                                 </h3>
 
                                 {/* Title */}
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 mt-1 border rounded text-[9px] font-bold tracking-wider uppercase select-none ${titleInfo.color}`}>
+                                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 mt-1 border rounded text-[8px] sm:text-[9px] font-bold tracking-wider uppercase select-none ${titleInfo.color}`}>
                                     <span>{titleInfo.icon}</span>
-                                    <span>{titleInfo.name}</span>
+                                    <span className="truncate">{titleInfo.name}</span>
                                 </span>
 
                                 {/* Points display */}
-                                <div className="mt-5 bg-black/40 border border-brand-border/60 rounded-2xl py-2 px-6 w-full max-w-[200px]">
-                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest block">Total Skor</span>
-                                    <span className="text-lg font-black text-white mt-0.5 block">
+                                <div className="mt-4 bg-black/40 border border-brand-border/60 rounded-xl py-1.5 px-2 sm:px-3 w-full">
+                                    <span className="text-[7px] sm:text-[8px] font-black text-zinc-500 uppercase tracking-widest block">Total Skor</span>
+                                    <span className="text-sm sm:text-base font-black text-white mt-0.5 block truncate">
                                         🪙 {(user.points || 0).toLocaleString()}
                                     </span>
                                 </div>
