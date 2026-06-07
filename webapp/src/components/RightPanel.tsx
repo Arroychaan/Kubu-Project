@@ -101,11 +101,11 @@ export default function RightPanel() {
                             const percentA = total === 0 ? 50 : Math.round((countA / total) * 100);
                             const percentB = total === 0 ? 50 : Math.round((countB / total) * 100);
 
-                            const leadingSide = percentA > percentB 
+                            const leadingSide = percentA > percentB
                                 ? { name: topic.option_a, percent: percentA, isLeft: true }
-                                : percentB > percentA 
-                                ? { name: topic.option_b, percent: percentB, isLeft: false }
-                                : { name: 'Seimbang', percent: 50, isLeft: null };
+                                : percentB > percentA
+                                    ? { name: topic.option_b, percent: percentB, isLeft: false }
+                                    : { name: 'Seimbang', percent: 50, isLeft: null };
 
                             return (
                                 <div key={topic.id} className="space-y-1.5">
@@ -119,11 +119,11 @@ export default function RightPanel() {
                                         <span className="text-zinc-400">{leadingSide.percent}%</span>
                                     </div>
                                     <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden flex mt-1">
-                                        <div 
+                                        <div
                                             className="h-full bg-choice-left transition-all duration-300"
                                             style={{ width: `${percentA}%` }}
                                         />
-                                        <div 
+                                        <div
                                             className="h-full bg-choice-right transition-all duration-300"
                                             style={{ width: `${percentB}%` }}
                                         />
@@ -153,9 +153,9 @@ export default function RightPanel() {
                     ) : influentialUsers.length > 0 ? (
                         influentialUsers.map((user) => {
                             return (
-                                <Link 
-                                    key={user.id} 
-                                    href={`/profile?username=${user.username}`} 
+                                <Link
+                                    key={user.id}
+                                    href={`/profile?username=${user.username}`}
                                     className="flex items-center gap-3 group"
                                 >
                                     <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-white shrink-0 group-hover:brightness-110 transition-all">
@@ -185,8 +185,8 @@ export default function RightPanel() {
 
             {/* 4. Footer Links */}
             <div className="flex flex-wrap gap-x-3 gap-y-1 px-4 py-2 text-[13px] text-zinc-500 font-medium">
-                <a href="#" className="hover:underline">Kebijakan Pengguna</a>
-                <a href="#" className="hover:underline">Privasi Pengguna</a>
+                <a href="#" className="hover:underline">Kebijakan Pengguna |</a>
+                <a href="#" className="hover:underline">Privasi Pengguna |</a>
                 <a href="#" className="hover:underline">Tentang</a>
                 <span>© 2026 Kubu.</span>
             </div>
