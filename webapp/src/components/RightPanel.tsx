@@ -185,9 +185,9 @@ export default function RightPanel() {
 
             {/* 4. Footer Links */}
             <div className="flex flex-wrap gap-x-3 gap-y-1 px-4 py-2 text-[13px] text-zinc-500 font-medium">
-                <a href="#" className="hover:underline">Kebijakan Pengguna |</a>
-                <a href="#" className="hover:underline">Privasi Pengguna |</a>
-                <a href="#" className="hover:underline">Tentang |</a>
+                <Link href="/help/kebijakan" className="hover:underline">Kebijakan Pengguna |</Link>
+                <Link href="/help/privasi" className="hover:underline">Privasi Pengguna |</Link>
+                <Link href="/help/tentang" className="hover:underline">Tentang |</Link>
                 <span>© 2026 Kubu.</span>
             </div>
         </div>

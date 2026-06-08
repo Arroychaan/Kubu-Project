@@ -9,19 +9,19 @@ interface ConditionalNavbarProps {
 
 export default function ConditionalNavbar({ children, paddingOnly = false }: ConditionalNavbarProps) {
     const pathname = usePathname();
-    const isAuthPage = pathname.startsWith('/auth');
+    const isCustomLayoutPage = pathname.startsWith('/auth') || pathname.startsWith('/help');
 
     if (paddingOnly) {
-        // For the main content wrapper: add pt-16 padding only on non-auth pages
+        // For the main content wrapper: add pt-16 padding only on non-custom layout pages
         return (
-            <div className={isAuthPage ? '' : 'md:pt-0 pt-16'}>
+            <div className={isCustomLayoutPage ? '' : 'md:pt-0 pt-16'}>
                 {children}
             </div>
         );
     }
 
-    // For the navbar itself: hide on auth pages
-    if (isAuthPage) {
+    // For the navbar itself: hide on custom layout pages
+    if (isCustomLayoutPage) {
         return null;
     }
 
